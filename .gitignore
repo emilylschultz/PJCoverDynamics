@@ -42,4 +42,8 @@ vignettes/*.pdf
 # Data files
 *.tiff
 *.tif
+*.tif.aux
+*.xml
 *.csv
+*.txt
+
