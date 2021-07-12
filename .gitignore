@@ -46,4 +46,7 @@ vignettes/*.pdf
 *.xml
 *.csv
 *.txt
+*.grd
+*.gri
+*.vrt
 
