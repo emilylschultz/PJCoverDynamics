@@ -24,7 +24,22 @@ tmax <- stack(tmaxFiles)
 PJcover <- raster("./PJCover/PJmask.tif")
 
 # Change climate raster projection to match percent cover raster
+newproj<-projection(PJcover)
+ppt_nad83<-projectRaster(ppt,crs=newproj)
+tmin_nad83<-projectRaster(tmin,crs=newproj)
+tmax_nad83<-projectRaster(tmax,crs=newproj)
 
 # Extract extent of percent cover raster
+extent <- extent(PJcover)
 
 # Clip climate rasters to percent cover extent
+
+ppt_cropped <- crop(ppt_nad83,extent)
+tmin_cropped <- crop(tmin_nad83,extent)
+tmax_cropped <- crop(tmax_nad83,extent)
+
+# Export clipped climate rasters
+writeRaster(ppt_cropped, "./DaymetClimate/pptStack.tif", overwrite = T)
+writeRaster(tmin_cropped, "./DaymetClimate/tminStack.tif", overwrite = T)
+writeRaster(tmax_cropped, "./DaymetClimate/tmaxStack.tif", overwrite = T)
+
