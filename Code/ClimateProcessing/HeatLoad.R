@@ -30,4 +30,4 @@ heatload <- setValues(latRaster,-1.467+1.582*cos(values(latRaster))*cos(values(s
 # Compare heat load categories to calculated heat load
 
 # Export heat load raster
-writeRaster(heatload, file = "./DaymetClimate/heatload.tif", overwrite = T, format="GTiff")
+writeRaster(heatload, file = "./EnvData/heatload.tif", overwrite = T, format="GTiff")
