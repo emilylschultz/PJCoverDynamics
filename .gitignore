@@ -49,4 +49,8 @@ vignettes/*.pdf
 *.grd
 *.gri
 *.vrt
+*.tfw
+*.ovr
+*.cpg
+*.dbf
 
