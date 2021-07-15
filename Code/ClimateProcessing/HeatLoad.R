@@ -3,13 +3,6 @@
 ## Created on: 12 Jul 2021
 
 library(raster)
-library(gdalUtilities)
-library(gdalUtils)
-
-# Get DEM from raster package
-#state<- spData::us_states %>% sf::st_transform(4326)
-elev<-getData(name = "alt",
-							country = "USA")
 
 # Load USGS DEMs
 DEM.path <-  "./EnvData/DEM/"
@@ -27,11 +20,11 @@ tile9 <- raster(DEMFiles[9])
 tile10 <- raster(DEMFiles[10])
 tile11 <- raster(DEMFiles[11])
 
+# merge DEM tiles into a single raster
 tiles <- list(tile1,tile2,tile3,tile4,tile5,tile6,tile7,tile8,tile9,tile10,tile11)
 elev <- do.call(merge,tiles)
 
 # Extract elevation, slope, and aspect
-#elev<-elev[[1]]
 slope = terrain(elev, opt='slope')
 aspect = terrain(elev, opt='aspect',unit="degrees")
 aspectFolded <- setValues(aspect, (180-abs(values(aspect)-180))*(pi/180))
@@ -51,11 +44,13 @@ heatload <- setValues(heatload, exp(values(heatload)))
 heatload_cat <- raster("./EnvData/HeatLoad_Classes/Western_US_30m_Exp_HeatLoad_Albers_USGS_Geometric_Interval_6_Classes.tif")
 
 # Compare heat load categories to calculated heat load
-#rm(tile1,tile2,tile3,tile4,tile5,tile6,tile7,tile8,tile9,tile10,tile11,tiles,slope,aspect,aspectFolded,latRaster,latRaster_rad)
+# might need to remove some rasters to free up memory: rm(tile1,tile2,tile3,tile4,tile5,tile6,tile7,tile8,tile9,tile10,tile11,tiles,slope,aspect,aspectFolded,latRaster,latRaster_rad)
 heatload_reproject<-projectRaster(heatload,crs=projection(heatload_cat))
 
 heatload_cat_cropped <- crop(heatload_cat,extent(heatload))
 
+plot(heatload_cat_cropped)
+plot(heatload) # for formal comparison, would need to calculate heatload for all of western US
 
 # Load percent cover raster (needed to get extent of study area)
 PJcover <- raster("./PJCover/PJmask.tif")
