@@ -38,6 +38,10 @@ ppt_cropped <- crop(ppt_nad83,extent)
 tmin_cropped <- crop(tmin_nad83,extent)
 tmax_cropped <- crop(tmax_nad83,extent)
 
+ppt_cropped <- resample(ppt_cropped,PJcover)
+tmin_cropped <- resample(tmin_cropped,PJcover)
+tmax_cropped <- resample(tmax_cropped,PJcover)
+
 # Export clipped climate rasters
 writeRaster(ppt_cropped, "./EnvData/pptStack.tif", overwrite = T)
 writeRaster(tmin_cropped, "./EnvData/tminStack.tif", overwrite = T)
