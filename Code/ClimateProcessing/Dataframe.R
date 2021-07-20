@@ -22,12 +22,13 @@ PJcover <- stack(PCFiles)
 mask <- raster(paste0(PC.path, "PJmask.tif"))
 
 # Set percent cover to NA where PJ are absent (confirm this with Bob)
-PJcover <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
-values(Allyrs)[values(Allyrs) == 0] = NA # convert 0 to NA
+PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
+values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
 
 # Rename rasters in stacks
 
 names(PJcover) <- as.character(2000:2016)
+names(PJcover_mask) <- as.character(2000:2016)
 
 clim_months <- numeric(0) # vector to store year and month from 1980 to 2020
 for(i in 1980:2020){
@@ -42,21 +43,44 @@ names(tmin) <- clim_months
 names(tmax) <- clim_months
 
 # Extract raster values and add to data frame
-	# Columns: Year t, Year t+1, location (center of pixel?), pc t, pc t+1, heat load, ppt (Oct-Sep),tmin (Oct-Sep), tmax (Oct-Sep)
-PJdata <- data.frame(matrix(ncol= 43,nrow = 0))
-colnames(PJdata) <- c("Year_t", "Year_t1", "location.x", "location.y", "PC_t", "PC_t", "Heatload",
-											paste0("ppt_", as.character(c(10:12,1:9))), 
-											paste0("tmin_", as.character(c(10:12,1:9))), paste0("tmax_", as.character(c(10:12,1:9))))
-	
+	# Columns: Year t, Year t+1, location (center of pixel?), pc t, pc t+1, change in pc, heat load, total water year ppt (Oct-Sep),average water year tmin (Oct-Sep), average water year tmax (Oct-Sep)
+
+#Extract data from climate rasters and put in matrix format
+start_ind <- which(clim_months=="2000_10") # start with Oct 2000
+end_ind <- which(clim_months=="2016_9") # end with Sep 2016
+
+ppt_mat <- as.matrix(ppt)[,start_ind:end_ind] 
+tmin_mat <- as.matrix(tmin)[,start_ind:end_ind] 
+tmax_mat <- as.matrix(tmax)[,start_ind:end_ind] 
+
+total_ppt <- numeric(0)
+ave_tmin <- numeric(0)
+ave_tmax <- numeric(0)
+for (i in 1:16){
+	sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
+	total_ppt <- c(total_ppt,sum_ppt) # add to ppt vector
+	sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
+	ave_tmin <- c(ave_tmin,sum_tmin) # add to tmin vector
+	sum_tmax <- rowMeans(tmax_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmax for each water year (Oct-Sep) for 2001 to 2016
+	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
+}
+
 PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover)))), 
-					 Year_t1 = sort(rep(2001:2016,(nrow(PJcover)*ncol(PJcover)))),
-					 location.x = rep(coordinates(PJcover)[,1],length(2000:2015)), 
-					 location.y = rep(coordinates(PJcover)[,2],length(2000:2015)), 
-					 PC_t = as.vector(as.matrix(PJcover)[,1:16]), 
-					 PC_t1 = as.vector(as.matrix(PJcover)[,2:17]),
-					 Heatload = rep(values(heatload),length(2000:2015)))
+										 Year_t1 = sort(rep(2001:2016,(nrow(PJcover)*ncol(PJcover)))),
+										 location.x = rep(coordinates(PJcover)[,1],length(2000:2015)), 
+										 location.y = rep(coordinates(PJcover)[,2],length(2000:2015)), 
+										 PC_t = as.vector(as.matrix(PJcover)[,1:16]), # percent cover in year t 
+										 PC_t1 = as.vector(as.matrix(PJcover)[,2:17]), # percent cover in year t+1
+										 PC_t_mask = as.vector(as.matrix(PJcover_mask)[,1:16]), # percent cover in year t 
+										 PC_t1_mask = as.vector(as.matrix(PJcover_mask)[,2:17]), # percent cover in year t+1
+										 Heatload = rep(values(heatload),length(2000:2015)),
+										 PPT = total_ppt, Tmin = ave_tmin, Tmax = ave_tmax) # water year climate variables calculated above
+PJdata$d_PC <- PJdata$PC_t1 - PJdata$PC_t # calculate change in percent cover
+PJdata$d_PC_mask <- PJdata$PC_t1_mask - PJdata$PC_t_mask # calculate change in percent cover
+
+PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
 head(PJdata)
 		 
-#	Calculate new variables
-	# Calculated columns: change in pc, total ppt, ave tmin, ave tmax
+write.csv(PJdata,"PJcover_data.csv")
+
