@@ -16,6 +16,20 @@ mytheme<-theme(panel.grid.major = element_blank(), panel.grid.minor = element_bl
 # Load data
 PJdata <- read.csv("PJcover_data.csv")
 
+# Subset data to make plotting more manageable
+ind <- sample(1:nrow(PJdata),5000) # random sample of indices to subset data
+PJdata_subset <- PJdata[ind,]
+
+# Aggregate percent cover and climate data over space and time
+PJdata_time <- PJdata %>%
+	group_by(Year_t) %>%
+	summarise(d_PC=mean(d_PC,na.rm=T), d_log_PC=mean(d_log_PC,na.rm=T), PPT=mean(PPT,na.rm=T), Tmin=mean(Tmin,na.rm=T), Tmax=mean(Tmax,na.rm=T))
+
+PJdata_space <- PJdata %>%
+	group_by(location.x,location.y) %>%
+	summarise(d_PC=mean(d_PC,na.rm=T), d_log_PC=mean(d_log_PC,na.rm=T), PPT=mean(PPT,na.rm=T), Tmin=mean(Tmin,na.rm=T), Tmax=mean(Tmax,na.rm=T))
+
+
 # Histograms
 png(file="./Output/Plots/PC_hist.png",4,4,units="in",type="cairo",res=600)
 hist(PJdata$d_PC,xlab="Change in percent cover",main="")
@@ -48,9 +62,6 @@ dev.off()
 
 # Predictor covariation
 # Unsurprisingly, tmin and tmax are strongly correlated, but other predictors are not
-
-ind <- sample(1:nrow(PJdata),10000) # random sample of indices to subset data
-PJdata_subset <- PJdata[ind,]
 
 heat_ppt <- ggplot(data=PJdata_subset,aes(x=Heatload,y=PPT))+
 	geom_point() + 
@@ -134,14 +145,6 @@ pc0_pc_nofire <- ggplot(data=subset(PJdata_subset,d_PC>(-10)),aes(x=PC_t,y=d_PC)
 	mytheme
 
 # Aggregate plots
-PJdata_time <- PJdata %>%
-	group_by(Year_t) %>%
-	summarise(d_PC=mean(d_PC,na.rm=T), PPT=mean(PPT,na.rm=T), Tmin=mean(Tmin,na.rm=T), Tmax=mean(Tmax,na.rm=T))
-
-PJdata_space <- PJdata %>%
-	group_by(location.x,location.y) %>%
-	summarise(d_PC=mean(d_PC,na.rm=T), PPT=mean(PPT,na.rm=T), Tmin=mean(Tmin,na.rm=T), Tmax=mean(Tmax,na.rm=T))
-
 ppt_pc_time <- ggplot(data=PJdata_time,aes(x=PPT,y=d_PC))+
 	geom_hline(yintercept=0) +
 	geom_point() + 
@@ -226,3 +229,147 @@ ggsave(file="./Output/Plots/tmax_pc_time.png", plot=tmax_pc_time,
 ggsave(file="./Output/Plots/tmax_pc_space.png", plot=tmax_pc_space,
 			 width=6,height=5,units="in",dpi=600)
 
+
+## Repeat graphs with log percent cover
+# Histograms
+png(file="./Output/Plots/PC_hist.png",4,4,units="in",type="cairo",res=600)
+hist(PJdata$d_log_PC,xlab="Change in percent cover",main="")
+dev.off()
+
+png(file="./Output/Plots/PC_hist_minus5.png",4,4,units="in",type="cairo",res=600)
+hist(subset(PJdata,d_log_PC<(-0.5))$d_log_PC,xlab="Change in percent cover",main="")
+dev.off()
+
+# Percent cover vs predictors
+heat_log_pc <- ggplot(data=PJdata_subset,aes(x=Heatload,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Heatload",y="Change in percent cover")+
+	mytheme
+
+heat_log_pc_nofire <- ggplot(data=subset(PJdata_subset,d_log_PC>(-0.5)),aes(x=Heatload,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Heatload",y="Change in percent cover")+
+	mytheme
+
+ppt_log_pc <- ggplot(data=PJdata_subset,aes(x=PPT,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Total water year precipitation (mm)",y="Change in percent cover")+
+	mytheme
+
+ppt_log_pc_nofire <- ggplot(data=subset(PJdata_subset,d_log_PC>(-0.5)),aes(x=PPT,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Total water year precipitation (mm)",y="Change in percent cover")+
+	mytheme
+
+tmin_log_pc <- ggplot(data=PJdata_subset,aes(x=Tmin,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year minimum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+tmin_log_pc_nofire <- ggplot(data=subset(PJdata_subset,d_log_PC>(-0.5)),aes(x=Tmin,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year minimum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+tmax_log_pc <- ggplot(data=PJdata_subset,aes(x=Tmax,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year maximum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+tmax_log_pc_nofire <- ggplot(data=subset(PJdata_subset,d_log_PC>(-0.5)),aes(x=Tmax,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year maximum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+pc0_log_pc <- ggplot(data=PJdata_subset,aes(x=log_PC_t,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Percent cover time t",y="Change in percent cover")+
+	mytheme
+
+pc0_log_pc_nofire <- ggplot(data=subset(PJdata_subset,d_log_PC>(-0.5)),aes(x=log_PC_t,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Percent cover time t",y="Change in percent cover")+
+	mytheme
+
+# Aggregate plots
+ppt_log_pc_time <- ggplot(data=PJdata_time,aes(x=PPT,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Total water year precipitation (mm)",y="Change in percent cover")+
+	mytheme
+
+tmin_log_pc_time <- ggplot(data=PJdata_time,aes(x=Tmin,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year minimum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+tmax_log_pc_time <- ggplot(data=PJdata_time,aes(x=Tmax,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year maximum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+ppt_log_pc_space <- ggplot(data=PJdata_space,aes(x=PPT,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Total water year precipitation (mm)",y="Change in percent cover")+
+	mytheme
+
+tmin_log_pc_space <- ggplot(data=PJdata_space,aes(x=Tmin,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year minimum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+tmax_log_pc_space <- ggplot(data=PJdata_space,aes(x=Tmax,y=d_log_PC))+
+	geom_hline(yintercept=0) +
+	geom_point() + 
+	labs(x="Average water year maximum temperature (C)",y="Change in percent cover")+
+	mytheme
+
+# Save plots
+
+ggsave(file="./Output/Plots/heat_log_pc.png", plot=heat_log_pc,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/heat_log_pc_sub.png", plot=heat_log_pc_nofire,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/ppt_log_pc.png", plot=ppt_log_pc,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/ppt_log_pc_sub.png", plot=ppt_log_pc_nofire,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmin_log_pc.png", plot=tmin_log_pc,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmin_log_pc_sub.png", plot=tmin_log_pc_nofire,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmax_log_pc.png", plot=tmax_log_pc,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmax_log_pc_sub.png", plot=tmax_log_pc_nofire,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/pc0_log_pc.png", plot=pc0_log_pc,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/pc0_log_pc_sub.png", plot=pc0_log_pc_nofire,
+			 width=6,height=5,units="in",dpi=600)
+
+ggsave(file="./Output/Plots/ppt_log_pc_time.png", plot=ppt_log_pc_time,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/ppt_log_pc_space.png", plot=ppt_log_pc_space,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmin_log_pc_time.png", plot=tmin_log_pc_time,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmin_log_pc_space.png", plot=tmin_log_pc_space,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmax_log_pc_time.png", plot=tmax_log_pc_time,
+			 width=6,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/tmax_log_pc_space.png", plot=tmax_log_pc_space,
+			 width=6,height=5,units="in",dpi=600)

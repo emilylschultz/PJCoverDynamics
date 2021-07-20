@@ -77,6 +77,9 @@ PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover))))
 										 PPT = total_ppt, Tmin = ave_tmin, Tmax = ave_tmax) # water year climate variables calculated above
 PJdata$d_PC <- PJdata$PC_t1 - PJdata$PC_t # calculate change in percent cover
 PJdata$d_PC_mask <- PJdata$PC_t1_mask - PJdata$PC_t_mask # calculate change in percent cover
+PJdata$log_PC_t <- log(PJdata$PC_t)
+PJdata$log_PC_t1 <- log(PJdata$PC_t1)
+PJdata$d_log_PC <- PJdata$log_PC_t1 - PJdata$log_PC_t
 
 PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
