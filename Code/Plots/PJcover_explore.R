@@ -232,11 +232,11 @@ ggsave(file="./Output/Plots/tmax_pc_space.png", plot=tmax_pc_space,
 
 ## Repeat graphs with log percent cover
 # Histograms
-png(file="./Output/Plots/PC_hist.png",4,4,units="in",type="cairo",res=600)
+png(file="./Output/Plots/log_PC_hist.png",4,4,units="in",type="cairo",res=600)
 hist(PJdata$d_log_PC,xlab="Change in percent cover",main="")
 dev.off()
 
-png(file="./Output/Plots/PC_hist_minus5.png",4,4,units="in",type="cairo",res=600)
+png(file="./Output/Plots/log_PC_hist_minus05.png",4,4,units="in",type="cairo",res=600)
 hist(subset(PJdata,d_log_PC<(-0.5))$d_log_PC,xlab="Change in percent cover",main="")
 dev.off()
 
