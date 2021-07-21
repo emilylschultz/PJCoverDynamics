@@ -4,18 +4,28 @@
 
 library(tidyverse)
 library(lme4)
+library(bbmle)
 library(dotwhisker)
 
 # Load data
 PJdata <- read.csv("PJcover_data.csv")
 
-PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT,Tmin,Tmax))
+PJdata_space <- PJdata %>%
+	group_by(location.x,location.y) %>%
+	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
+
+PJdata <- merge(PJdata,PJdata_space) %>%
+	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
+
+
+PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
-clim <- lm(d_log_PC ~ (Heatload + PPT + Tmin + Tmax)^2, PJdata.scaled)
-clim_dens <- lm(d_log_PC ~ log_PC_t + (Heatload + PPT + Tmin + Tmax)^2, PJdata.scaled)
-clim_dens_int <- lm(d_log_PC ~ (log_PC_t + Heatload + PPT + Tmin + Tmax)^2, PJdata.scaled)
+clim <- lm(d_log_PC ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens <- lm(d_log_PC ~ log_PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens_int <- lm(d_log_PC ~ (log_PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 
+AICtab(clim,clim_dens,clim_dens_int)
 
 # Set up ggplot theme
 mytheme<-theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -40,10 +50,10 @@ allmodels_plot <- dwplot(list("Climate Only"=clim,"Climate + Density"=clim_dens,
 	mytheme + theme(legend.title = element_blank())
 
 ggsave(file="./Output/Plots/clim_modelcoef.png", plot=clim_plot,
-			 width=6,height=5,units="in",dpi=600)
+			 width=7,height=5,units="in",dpi=600)
 ggsave(file="./Output/Plots/climdens_modelcoef.png", plot=clim_dens_plot,
-			 width=6,height=5,units="in",dpi=600)
+			 width=7,height=5,units="in",dpi=600)
 ggsave(file="./Output/Plots/climdensint_modelcoef.png", plot=clim_dens_int_plot,
-			 width=6,height=5,units="in",dpi=600)
+			 width=7,height=5,units="in",dpi=600)
 ggsave(file="./Output/Plots/all_modelcoef.png", plot=allmodels_plot,
-			 width=6,height=5,units="in",dpi=600)
+			 width=8,height=5,units="in",dpi=600)
