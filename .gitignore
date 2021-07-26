@@ -54,4 +54,5 @@ vignettes/*.pdf
 *.cpg
 *.dbf
 *.png
+*.hdf
 
