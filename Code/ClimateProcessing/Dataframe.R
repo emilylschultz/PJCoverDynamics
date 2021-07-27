@@ -84,6 +84,8 @@ PJdata$d_log_PC <- PJdata$log_PC_t1 - PJdata$log_PC_t
 PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
 head(PJdata)
+
+PJdata$Fire <- ifelse(PJdata$d_PC < (-9) & PJdata$Year_t==2002,1,0) # Remove fire pixels from 2002 to 2003 transition
 		 
 write.csv(PJdata,"PJcover_data.csv")
 

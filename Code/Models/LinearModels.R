@@ -10,13 +10,14 @@ library(dotwhisker)
 # Load data
 PJdata <- read.csv("PJcover_data.csv")
 
+PJdata <- subset(PJdata,Fire==0)
+
 PJdata_space <- PJdata %>%
 	group_by(location.x,location.y) %>%
 	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
 
 PJdata <- merge(PJdata,PJdata_space) %>%
 	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
-
 
 PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
 

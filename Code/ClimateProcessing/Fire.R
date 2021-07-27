@@ -3,7 +3,6 @@
 ## Created on: 23 Jul 2021
 
 library(raster)
-library(gdalUtils)
 library(RColorBrewer)
 
 # Load percent cover rasters
@@ -30,28 +29,7 @@ legend_text<-(c(cuts_round[1],cuts_round[11],cuts_round[21],cuts_round[31],cuts_
 plot(d_PJcover, breaks=cuts, col=pal_div(11))
 
 for (i in 1:16){
-	plot(d_PJcover[[i]], breaks=cuts, col=pal_div(11))
+	plot(d_PJcover[[i]], breaks=cuts, col=pal_div(11)) 
 }
 
-# Get fire raster data files
-Fire.path <-  "./EnvData/Fire/"
-
-FireFiles <- list.files(path = Fire.path, pattern = glob2rx("*.hdf"), full.names = TRUE)
-
-filename <- substr(FireFiles,25,31)
-filename <- paste0("Fire", filename, ".tif")
-
-
-for (i in 1:1){
-	sds <- get_subdatasets(files[i])
-	gdal_translate(sds[1], dst_dataset = filename[i])
-}
-
-# Upload PJ presence/absence data
-mask <- raster(paste0(PC.path, "PJmask.tif"))
-
-# Reproject and resample fire rasters
-
-# Summarize fire occurrence over water year (Oct-Sep)
-
-# Add fire occurrence to dataframe
+# Large negative change in percent cover in north-central part of study extent from 2002 to 2003 - matches fire perimeter in MODIS data
