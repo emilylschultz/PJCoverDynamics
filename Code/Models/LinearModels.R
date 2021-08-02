@@ -10,15 +10,19 @@ library(dotwhisker)
 # Load data
 PJdata <- read.csv("PJcover_data.csv")
 
+# Remove data points with fire
 PJdata <- subset(PJdata,Fire==0)
 
+# Summarize climate variable to calculate spatially-varying climate normals
 PJdata_space <- PJdata %>%
 	group_by(location.x,location.y) %>%
 	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
 
+# Add spacially-varying climate variables, and calculate annual deviations from normals
 PJdata <- merge(PJdata,PJdata_space) %>%
 	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
 
+# Scale predictor variables
 PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
@@ -64,15 +68,19 @@ ggsave(file="./Output/Plots/all_modelcoef.png", plot=allmodels_plot,
 # Load data
 PJdataRAP <- read.csv("PJcoverRAP_data.csv")
 
+# Remove data points with fire
 PJdataRAP <- subset(PJdataRAP,Fire==0)
 
+# Summarize climate variable to calculate spatially-varying climate normals
 PJdataRAP_space <- PJdataRAP %>%
 	group_by(location.x,location.y) %>%
 	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
 
+# Add spacially-varying climate variables, and calculate annual deviations from normals
 PJdataRAP <- merge(PJdataRAP,PJdataRAP_space) %>%
 	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
 
+# Scale predictor variables
 PJdataRAP.scaled <- PJdataRAP %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
