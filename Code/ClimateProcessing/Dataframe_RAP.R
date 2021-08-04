@@ -14,21 +14,21 @@ heatload <-raster("./EnvData/heatload.tif")
 # Get percent cover raster data files
 PC.path <-  "./PJCover/"
 
-PCFiles <- list.files(path = PC.path, pattern = glob2rx("Clipped*.tif"), full.names = TRUE)
+PCFiles <- list.files(path = PC.path, pattern = glob2rx("RAP*.tif"), full.names = TRUE)
 
 PJcover <- stack(PCFiles)
 
 # Upload PJ presence/absence data
 mask <- raster(paste0(PC.path, "PJmask.tif"))
 
-# Set percent cover to NA where PJ are absent (confirm this with Bob)
+# Set percent cover to NA where PJ are absent
 PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
 values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
 
 # Rename rasters in stacks
 
-names(PJcover) <- as.character(2000:2016)
-names(PJcover_mask) <- as.character(2000:2016)
+names(PJcover) <- as.character(1984:2020)
+#names(PJcover_mask) <- as.character(2000:2016)
 
 clim_months <- numeric(0) # vector to store year and month from 1980 to 2020
 for(i in 1980:2020){
@@ -46,8 +46,8 @@ names(tmax) <- clim_months
 	# Columns: Year t, Year t+1, location (center of pixel?), pc t, pc t+1, change in pc, heat load, total water year ppt (Oct-Sep),average water year tmin (Oct-Sep), average water year tmax (Oct-Sep)
 
 #Extract data from climate rasters and put in matrix format
-start_ind <- which(clim_months=="2000_10") # start with Oct 2000
-end_ind <- which(clim_months=="2016_9") # end with Sep 2016
+start_ind <- which(clim_months=="1984_10") # start with Oct 1984
+end_ind <- which(clim_months=="2020_9") # end with Sep 2020
 
 ppt_mat <- as.matrix(ppt)[,start_ind:end_ind] 
 tmin_mat <- as.matrix(tmin)[,start_ind:end_ind] 
@@ -87,5 +87,5 @@ head(PJdata)
 
 PJdata$Fire <- ifelse(PJdata$d_PC < (-9) & PJdata$Year_t==2002,1,0) # Remove fire pixels from 2002 to 2003 transition
 		 
-write.csv(PJdata,"PJcover_data.csv")
+write.csv(PJdata,"PJcoverRAP_data.csv")
 
