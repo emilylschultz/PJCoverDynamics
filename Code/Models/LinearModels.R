@@ -70,7 +70,7 @@ ggsave(file="./Output/Plots/all_modelcoef.png", plot=allmodels_plot,
 PJdataRAP <- read.csv("PJcoverRAP_data.csv")
 
 # Remove data points with fire
-PJdataRAP <- subset(PJdataRAP,Fire==0)
+PJdataRAP <- subset(PJdataRAP,Fire==0 & Year_t<2016 & Year_t>1999)
 
 # Remove data points with NA, NaN, and Inf
 #PJdataRAP <- NaRV.omit(PJdataRAP)
@@ -82,8 +82,7 @@ PJdataRAP_space <- PJdataRAP %>%
 
 # Add spacially-varying climate variables, and calculate annual deviations from normals
 PJdataRAP <- merge(PJdataRAP,PJdataRAP_space) %>%
-	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean, 
-				 log_PC_t_pos=log(PC_t+2), log_PC_t1_pos=log(PC_t1+2), d_log_PC_pos=log_PC_t1_pos-log_PC_t_pos)
+	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
 
 # Scale predictor variables
 PJdataRAP.scaled <- PJdataRAP %>% mutate_at(scale, .vars = vars(log_PC_t_pos,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
@@ -94,7 +93,7 @@ clim_RAP <- lm(d_log_PC_pos ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT
 clim_dens_RAP <- lm(d_log_PC_pos ~ log_PC_t_pos + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
 clim_dens_int_RAP <- lm(d_log_PC_pos ~ (log_PC_t_pos + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
 
-AICtab(clim_RAP,clim_dens_int_RAP)
+AICtab(clim_RAP,clim_dens_RAP,clim_dens_int_RAP)
 
 # Set up ggplot theme
 mytheme<-theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -108,20 +107,20 @@ mytheme<-theme(panel.grid.major = element_blank(), panel.grid.minor = element_bl
 # Plot model coefficients
 clim_plot_RAP <- dwplot(clim_RAP,dot_args=list(size=2),
 										vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + mytheme
-#clim_dens_plot_RAP <- dwplot(clim_dens_RAP,dot_args=list(size=2),
-#												 vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + mytheme
+clim_dens_plot_RAP <- dwplot(clim_dens_RAP,dot_args=list(size=2),
+												 vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + mytheme
 clim_dens_int_plot_RAP <- dwplot(clim_dens_int_RAP,dot_args=list(size=2),
 														 vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + mytheme
 
-allmodels_plot_RAP <- dwplot(list("Climate Only"=clim_RAP,"Climate * Density"=clim_dens_int_RAP),
+allmodels_plot_RAP <- dwplot(list("Climate Only"=clim_RAP, "Climate + Density"=clim_dens_RAP,"Climate * Density"=clim_dens_int_RAP),
 												 dot_args=list(size=2),
 												 vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + 
 	mytheme + theme(legend.title = element_blank())
 
 ggsave(file="./Output/Plots/climRAP_modelcoef.png", plot=clim_plot_RAP,
 			 width=7,height=5,units="in",dpi=600)
-#ggsave(file="./Output/Plots/climdensRAP_modelcoef.png", plot=clim_dens_plot_RAP,
-#			 width=7,height=5,units="in",dpi=600)
+ggsave(file="./Output/Plots/climdensRAP_modelcoef.png", plot=clim_dens_plot_RAP,
+			 width=7,height=5,units="in",dpi=600)
 ggsave(file="./Output/Plots/climdensintRAP_modelcoef.png", plot=clim_dens_int_plot_RAP,
 			 width=7,height=5,units="in",dpi=600)
 ggsave(file="./Output/Plots/allRAP_modelcoef.png", plot=allmodels_plot_RAP,
