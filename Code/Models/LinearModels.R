@@ -28,8 +28,8 @@ PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
 clim <- lm(d_log_PC ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
-clim_dens <- lm(d_log_PC ~ log_PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
-clim_dens_int <- lm(d_log_PC ~ (log_PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens <- lm(d_log_PC ~ PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens_int <- lm(d_log_PC ~ (PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 
 AICtab(clim,clim_dens,clim_dens_int)
 
@@ -90,8 +90,8 @@ PJdataRAP.scaled <- PJdataRAP %>% mutate_at(scale, .vars = vars(log_PC_t_pos,Hea
 PJdataRAP.scaled <- select(PJdataRAP.scaled, d_log_PC_pos,log_PC_t_pos,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
 clim_RAP <- lm(d_log_PC_pos ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
-clim_dens_RAP <- lm(d_log_PC_pos ~ log_PC_t_pos + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
-clim_dens_int_RAP <- lm(d_log_PC_pos ~ (log_PC_t_pos + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
+clim_dens_RAP <- lm(d_log_PC_pos ~ PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
+clim_dens_int_RAP <- lm(d_log_PC_pos ~ (PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdataRAP.scaled)
 
 AICtab(clim_RAP,clim_dens_RAP,clim_dens_int_RAP)
 
