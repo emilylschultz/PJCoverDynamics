@@ -56,7 +56,7 @@ tmax_mat <- as.matrix(tmax)[,start_ind:end_ind]
 total_ppt <- numeric(0)
 ave_tmin <- numeric(0)
 ave_tmax <- numeric(0)
-for (i in 1:16){
+for (i in 1:36){
 	sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
 	total_ppt <- c(total_ppt,sum_ppt) # add to ppt vector
 	sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
@@ -65,21 +65,24 @@ for (i in 1:16){
 	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
 }
 
-PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover)))), 
-										 Year_t1 = sort(rep(2001:2016,(nrow(PJcover)*ncol(PJcover)))),
-										 location.x = rep(coordinates(PJcover)[,1],length(2000:2015)), 
-										 location.y = rep(coordinates(PJcover)[,2],length(2000:2015)), 
-										 PC_t = as.vector(as.matrix(PJcover)[,1:16]), # percent cover in year t 
-										 PC_t1 = as.vector(as.matrix(PJcover)[,2:17]), # percent cover in year t+1
-										 PC_t_mask = as.vector(as.matrix(PJcover_mask)[,1:16]), # percent cover in year t 
-										 PC_t1_mask = as.vector(as.matrix(PJcover_mask)[,2:17]), # percent cover in year t+1
-										 Heatload = rep(values(heatload),length(2000:2015)),
+PJdata <- data.frame(Year_t = sort(rep(1984:2019,(nrow(PJcover)*ncol(PJcover)))), 
+										 Year_t1 = sort(rep(1985:2020,(nrow(PJcover)*ncol(PJcover)))),
+										 location.x = rep(coordinates(PJcover)[,1],length(1984:2019)), 
+										 location.y = rep(coordinates(PJcover)[,2],length(1984:2019)), 
+										 PC_t = as.vector(as.matrix(PJcover)[,1:36]), # percent cover in year t 
+										 PC_t1 = as.vector(as.matrix(PJcover)[,2:37]), # percent cover in year t+1
+										 PC_t_mask = as.vector(as.matrix(PJcover_mask)[,1:36]), # percent cover in year t 
+										 PC_t1_mask = as.vector(as.matrix(PJcover_mask)[,2:37]), # percent cover in year t+1
+										 Heatload = rep(values(heatload),length(1984:2019)),
 										 PPT = total_ppt, Tmin = ave_tmin, Tmax = ave_tmax) # water year climate variables calculated above
 PJdata$d_PC <- PJdata$PC_t1 - PJdata$PC_t # calculate change in percent cover
 PJdata$d_PC_mask <- PJdata$PC_t1_mask - PJdata$PC_t_mask # calculate change in percent cover
 PJdata$log_PC_t <- log(PJdata$PC_t)
 PJdata$log_PC_t1 <- log(PJdata$PC_t1)
 PJdata$d_log_PC <- PJdata$log_PC_t1 - PJdata$log_PC_t
+PJdata$log_PC_t_pos <- log(PJdata$PC_t+2)
+PJdata$log_PC_t1_pos <- log(PJdata$PC_t1+2)
+PJdata$d_log_PC_pos <- PJdata$log_PC_t1_pos-PJdata$log_PC_t_pos
 
 PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
