@@ -7,12 +7,18 @@ library(lme4)
 library(bbmle)
 library(dotwhisker)
 library(IDPmisc)
+library(DHARMa)
 
 # Load data
 PJdata <- read.csv("PJcover_data.csv")
 
 # Remove data points with fire
 PJdata <- subset(PJdata,Fire==0)
+
+PJdata <- PJdata %>%
+	mutate(PJdata, Location=str_c(as.character(location.x),as.character(location.y))) %>%
+	arrange(Year_t,Location) %>%
+	mutate(PJdata, Pixel_ID=as.numeric(factor(Location, levels = unique(Location))))
 
 # Summarize climate variable to calculate spatially-varying climate normals
 PJdata_space <- PJdata %>%
@@ -24,7 +30,11 @@ PJdata <- merge(PJdata,PJdata_space) %>%
 	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
 
 # Scale predictor variables
-PJdata.scaled <- PJdata %>% mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev))
+PJdata.scaled <- PJdata %>% 
+	mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)) %>%
+	filter(Year_t==2000)
+
+PJdata.scaled <- na.omit(PJdata.scaled)[1:10000,]
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
 clim <- lm(d_log_PC ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
@@ -32,6 +42,14 @@ clim_dens <- lm(d_log_PC ~ PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean +
 clim_dens_int <- lm(d_log_PC ~ (PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 
 AICtab(clim,clim_dens,clim_dens_int)
+
+res <- simulateResiduals(clim_dens_int)
+
+resSpat <- SpatialPointsDataFrame(coords = cbind(grData_remeas$LON, grData_remeas$LAT), 
+																 data = grData_remeas, 
+																 proj4string = CRS("+proj=longlat +datum=NAD83"))
+
+testSpatialAutocorrelation(simulationOutput = res, x=PJdata.scaled$location.x, y=PJdata.scaled$location.y)
 
 # Set up ggplot theme
 mytheme<-theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
