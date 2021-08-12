@@ -80,8 +80,8 @@ cat("
 
     real<lower=0> sigma_y;                 // residual variation
     
-    vector[n] log_pc_t;
-    vector[n] log_pc_t1;
+    vector[n] log_pc_t;    ///// Bob: I was thinking about this more and I think these (line 83 and 84) need to be combined into the same matrix. Otherwise its hard to constrain Stan to know that log_pc_t[2]==log_pc_t1[1] 
+    vector[n] log_pc_t1;    ///// You could set this up as matrix[Npixels,Nyears] log_pc_t
     
     //vector<lower=0>[n] pc_true;                     // true, unobserved percent cover at time t
 		//vector<lower=0>[n] pc1_true;                    // true, unobserved percent cover at time t+1
@@ -99,14 +99,19 @@ cat("
     
     sigma_y ~ cauchy(0,5);
 
-    pc_t ~ normal(exp(log_pc_t),sigma_pc);
+    pc_t ~ normal(exp(log_pc_t),sigma_pc); //These are the observation models? Similar to line 83 and 84 this can be collapsed
     pc_t1 ~ normal(exp(log_pc_t1),sigma_pc);
     
 
     // Percent Cover Model
     
-    log_pc_t1 - log_pc_t ~ normal(u_beta0 + x*u_beta + u_beta_pc*exp(log_pc_t),sigma_y);
+    log_pc_t1 - log_pc_t ~ normal(u_beta0 + x*u_beta + u_beta_pc*exp(log_pc_t),sigma_y); 
     
+    //// with the matrix above maybe then tying to loop over years and calulate this for each pixel as a vector, x could also also be a 3d array
+    //maybe Something like
+    //for Pixel in 1:Npixel{
+    //log_pc_t1[Pixel,] - log_pc_t [Pixel,] ~ normal(u_beta0 + x[Pixel,,] *u_beta + u_beta_pc*exp(log_pc_t[Pixel,]),sigma_y); 
+    //}
     }
     
    
