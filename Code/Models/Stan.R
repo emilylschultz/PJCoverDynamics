@@ -109,8 +109,8 @@ cat("
     
     //// with the matrix above maybe then tying to loop over years and calulate this for each pixel as a vector, x could also also be a 3d array
     //maybe Something like
-    //for Pixel in 1:Npixel{
-    //log_pc_t1[Pixel,] - log_pc_t [Pixel,] ~ normal(u_beta0 + x[Pixel,,] *u_beta + u_beta_pc*exp(log_pc_t[Pixel,]),sigma_y); 
+    //for Year in 1:Nyear{
+    //log_pc_t[l,Year+1] - log_pc_t [,Year] ~ normal(u_beta0 + x[,Year,] *u_beta + u_beta_pc*exp(log_pc_t[,Year]),sigma_y); 
     //}
     }
     
