@@ -65,6 +65,11 @@ for (i in 1:16){
 	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
 }
 
+pc_mat <- as.matrix(PJcover)[,1:17]
+location.x = coordinates(PJcover)[,1]
+location.y = coordinates(PJcover)[,2]
+save(pc_mat,location.x,location.y,file="./Output/PJcover_mat.rda")
+
 PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover)))), 
 										 Year_t1 = sort(rep(2001:2016,(nrow(PJcover)*ncol(PJcover)))),
 										 location.x = rep(coordinates(PJcover)[,1],length(2000:2015)), 
