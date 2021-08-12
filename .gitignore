@@ -56,3 +56,4 @@ vignettes/*.pdf
 *.png
 *.hdf
 *.stan
+*.rda
