@@ -93,9 +93,6 @@ cat("
     
     matrix[n_tot,n_year] log_pc;
 
-    //vector<lower=0>[n] pc_true;                     // true, unobserved percent cover at time t
-		//vector<lower=0>[n] pc1_true;                    // true, unobserved percent cover at time t+1
-
 		//real<lower=0> sigma_pc;                // percent cover error
 		//real<lower=0> sigma_pc_r;              // percent cover RAP error
 		
@@ -109,19 +106,26 @@ cat("
     
     sigma_y ~ cauchy(0,5);
 
+		// Observation model
 		for(i in 1:n_tot){
 			for(y in 1:n_year){
 				pc[which(pixel==i & year==y)] ~ normal(exp(log_pc[1,y]),sigma_pc);
 			}
 		}
 
-    // Percent Cover Model
+    // Process Model
     
     for(t in 1:16){
         log_pc[,t+1] - log_pc[,t] ~ normal(u_beta0 + u_beta_pc*exp(log_pc[,t]),sigma_y);
     }
     
     //+ x*u_beta 
+    
+    //// with the matrix above maybe then tying to loop over years and calulate this for each pixel as a vector, x could also also be a 3d array
+    //maybe Something like
+    //for Year in 1:Nyear{
+    //log_pc_t[l,Year+1] - log_pc_t [,Year] ~ normal(u_beta0 + x[,Year,] *u_beta + u_beta_pc*exp(log_pc_t[,Year]),sigma_y); 
+    //}
     }
     
    
