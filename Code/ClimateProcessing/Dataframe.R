@@ -65,6 +65,7 @@ for (i in 1:16){
 	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
 }
 
+# Save matrix of pc values and vectors of location values
 pc_mat <- as.matrix(PJcover)[,1:17]
 location.x = coordinates(PJcover)[,1]
 location.y = coordinates(PJcover)[,2]
