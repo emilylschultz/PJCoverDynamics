@@ -69,7 +69,7 @@ for (i in 1:36){
 pc_mat_RAP <- as.matrix(PJcover)
 location.x.RAP = coordinates(PJcover)[,1]
 location.y.RAP = coordinates(PJcover)[,2]
-save(pc_mat,location.x,location.y,file="./Output/PJcover_mat_RAP.rda")
+save(pc_mat_RAP,location.x.RAP,location.y.RAP,file="./Output/PJcover_mat_RAP.rda")
 
 PJdata <- data.frame(Year_t = sort(rep(1984:2019,(nrow(PJcover)*ncol(PJcover)))), 
 										 Year_t1 = sort(rep(1985:2020,(nrow(PJcover)*ncol(PJcover)))),

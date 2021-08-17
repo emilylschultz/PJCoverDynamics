@@ -33,14 +33,13 @@ tmax_nad83<-projectRaster(tmax,crs=newproj)
 extent <- extent(PJcover)
 
 # Clip climate rasters to percent cover extent
+ppt_nad83 <- resample(ppt_nad83,PJcover)
+tmin_nad83 <- resample(tmin_nad83,PJcover)
+tmax_nad83 <- resample(tmax_nad83,PJcover)
 
 ppt_cropped <- crop(ppt_nad83,extent)
 tmin_cropped <- crop(tmin_nad83,extent)
 tmax_cropped <- crop(tmax_nad83,extent)
-
-ppt_cropped <- resample(ppt_cropped,PJcover)
-tmin_cropped <- resample(tmin_cropped,PJcover)
-tmax_cropped <- resample(tmax_cropped,PJcover)
 
 # Export clipped climate rasters
 writeRaster(ppt_cropped, "./EnvData/pptStack.tif", overwrite = T)
