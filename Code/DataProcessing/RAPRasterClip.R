@@ -10,7 +10,7 @@ library(raster) # also loads required sp package
 RAP.path <-  "./PJCover/tree/"
 
 # Get RAP percent cover raster data files
-RAPFiles <- list.files(path = RAP.path, pattern = glob2rx("*201*.tif"), full.names = TRUE) # Do one decade at a time because of memory limitations
+RAPFiles <- list.files(path = RAP.path, pattern = glob2rx("*202*.tif"), full.names = TRUE) # Do one decade at a time because of memory limitations
 
 RAP <- stack(RAPFiles)
 
@@ -27,11 +27,10 @@ RAP_nad83<-projectRaster(RAP,crs=newproj)
 extent <- extent(PJcover)
 
 # Clip climate rasters to percent cover extent
+RAP_nad83 <- resample(RAP_nad83,PJcover)
 
 RAP_cropped <- crop(RAP_nad83,extent)
 
-RAP_cropped <- resample(RAP_cropped,PJcover)
-
 # Export clipped climate rasters
-writeRaster(RAP_cropped, "./PJCover/RAPStack_2010s.tif", overwrite = T)
+writeRaster(RAP_cropped, "./PJCover/RAPStack_2020s.tif", overwrite = T)
 

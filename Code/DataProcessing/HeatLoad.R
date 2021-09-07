@@ -44,7 +44,7 @@ heatload <- setValues(heatload, exp(values(heatload)))
 heatload_cat <- raster("./EnvData/HeatLoad_Classes/Western_US_30m_Exp_HeatLoad_Albers_USGS_Geometric_Interval_6_Classes.tif")
 
 # Compare heat load categories to calculated heat load
-# might need to remove some rasters to free up memory: rm(tile1,tile2,tile3,tile4,tile5,tile6,tile7,tile8,tile9,tile10,tile11,tiles,slope,aspect,aspectFolded,latRaster,latRaster_rad)
+# might need to remove some rasters to free up memory: rm(tile1,tile2,tile3,tile4,tile5,tile6,tile7,tile8,tile9,tile10,tile11,tiles,slope,aspect,aspectFolded,latRaster)
 heatload_reproject<-projectRaster(heatload,crs=projection(heatload_cat))
 
 heatload_cat_cropped <- crop(heatload_cat,extent(heatload))
@@ -63,8 +63,8 @@ extent <- extent(PJcover)
 
 # Clip climate rasters to percent cover extent
 
+heatload_reproject <- resample(heatload_reproject,PJcover)
 heatload_cropped <- crop(heatload_reproject,extent)
-heatload_cropped <- resample(heatload_cropped,PJcover)
 
 # Export heat load raster
 writeRaster(heatload_cropped, file = "./EnvData/heatload.tif", overwrite = T, format="GTiff")
