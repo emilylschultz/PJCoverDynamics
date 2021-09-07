@@ -49,6 +49,7 @@ names(tmax) <- clim_months
 start_ind <- which(clim_months=="1984_10") # start with Oct 1984
 end_ind <- which(clim_months=="2020_9") # end with Sep 2020
 
+heatload_vec <- values(heatload)
 ppt_mat <- as.matrix(ppt)[,start_ind:end_ind] 
 tmin_mat <- as.matrix(tmin)[,start_ind:end_ind] 
 tmax_mat <- as.matrix(tmax)[,start_ind:end_ind] 
@@ -58,18 +59,21 @@ ave_tmin <- numeric(0)
 ave_tmax <- numeric(0)
 for (i in 1:36){
 	sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
-	total_ppt <- c(total_ppt,sum_ppt) # add to ppt vector
+	total_ppt <- cbind(total_ppt,sum_ppt) # add to ppt vector
 	sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
-	ave_tmin <- c(ave_tmin,sum_tmin) # add to tmin vector
+	ave_tmin <- cbind(ave_tmin,sum_tmin) # add to tmin vector
 	sum_tmax <- rowMeans(tmax_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmax for each water year (Oct-Sep) for 2001 to 2016
-	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
+	ave_tmax <- cbind(ave_tmax,sum_tmax) # add to tmax vector
 }
 
 # Save matrix of pc values and vectors of location values
 pc_mat_RAP <- as.matrix(PJcover)
 location.x.RAP = coordinates(PJcover)[,1]
 location.y.RAP = coordinates(PJcover)[,2]
-save(pc_mat_RAP,location.x.RAP,location.y.RAP,file="./Output/PJcover_mat_RAP.rda")
+save(pc_mat_RAP,location.x.RAP,location.y.RAP,file="./Output/Climate_mat_RAP.rda")
+
+# Save matrices of climate data
+save(total_ppt,ave_tmin,ave_tmax,heatload_vec,file="./Output/Climate_mat.rda")
 
 PJdata <- data.frame(Year_t = sort(rep(1984:2019,(nrow(PJcover)*ncol(PJcover)))), 
 										 Year_t1 = sort(rep(1985:2020,(nrow(PJcover)*ncol(PJcover)))),
