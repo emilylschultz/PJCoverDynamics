@@ -31,15 +31,23 @@ PJdata <- merge(PJdata,PJdata_space) %>%
 
 # Scale predictor variables
 PJdata.scaled <- PJdata %>% 
-	mutate_at(scale, .vars = vars(log_PC_t,Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)) %>%
+	mutate_at(scale, .vars = vars(Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)) %>%
 	filter(Year_t==2000)
 
-PJdata.scaled <- na.omit(PJdata.scaled)[1:10000,]
+PJdata.scaled <- na.omit(PJdata.scaled)
+
 
 # Linear models (clim = climate only; clim_dens = climate + dens, no density-climate interactions; clim_dens_int = climate + dens, all two-way interactions)
+
+# Ricker
 clim <- lm(d_log_PC ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 clim_dens <- lm(d_log_PC ~ PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 clim_dens_int <- lm(d_log_PC ~ (PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+
+# Gompertz
+clim <- lm(d_log_PC ~ (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens <- lm(log_PC_t1 ~ log_PC_t + (Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
+clim_dens_int <- lm(log_PC_t1 ~ (log_PC_t + Heatload + PPT_mean + Tmin_mean + Tmax_mean + PPT_dev + Tmin_dev + Tmax_dev)^2, PJdata.scaled)
 
 AICtab(clim,clim_dens,clim_dens_int)
 
