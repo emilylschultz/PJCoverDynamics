@@ -1,4 +1,4 @@
-#### PJ Cover Dynamics: Code to create Bayesian models of effects of density and climate on PJ percent cover
+#### PJ Cover Dynamics: Code to set up stan data for Bayesian models of effects of density and climate on PJ percent cover
 ## Created by: Emily Schultz
 ## Created on: 2 Aug 2021
 
@@ -15,37 +15,32 @@ load("./OUtput/Climate_mat.rda")
 
 ## Keep only percent cover matrix pixels that are in PJdata in at least one year
 # Create dataframe of location data
-Location_data <- data.frame(location.x = location.x, location.y = location.y) %>%
+#sample = sample.int(4,length(location.x),replace = T)
+#save(sample,file="location_sample.rda")
+load("location_sample.rda")
+
+Location_data <- data.frame(Index = seq(1,length(location.x)), location.x = location.x, location.y = location.y, Sample = sample) %>%
 	mutate(Location=str_c(as.character(location.x),as.character(location.y))) 
 
-Location_dataRAP <- data.frame(location.x = location.x.RAP, location.y = location.y.RAP) %>%
+Location_dataRAP <- data.frame(Index = seq(1,length(location.x)), location.x = location.x.RAP, location.y = location.y.RAP, Sample = sample) %>%
 	mutate(Location=str_c(as.character(location.x.RAP),as.character(location.y.RAP))) 
 
 # Add location variable (combing lat and long) to PJdata
-PJdata <- mutate(PJdata,Location=str_c(as.character(location.x),as.character(location.y))) 
-PJdataRAP <- mutate(PJdataRAP,Location=str_c(as.character(location.x),as.character(location.y)))
+PJdata <- mutate(PJdata,Location=str_c(as.character(location.x),as.character(location.y))) %>%
+	select(Location,Year_t,Year_t1,PC_t,PC_t1,Fire)
+PJdataRAP <- mutate(PJdataRAP,Location=str_c(as.character(location.x),as.character(location.y))) %>%
+	select(Location,Year_t,Year_t1,PC_t,PC_t1,Fire)
 
 # Subset data to only include 100 locations
-sub <- sample(unique(PJdata$Location),1000)
-match <- match(PJdata$Location,sub)
-PJdata<-PJdata[which(!is.na(match)),]
-matchRAP <- match(PJdataRAP$Location,sub)
-PJdataRAP<-PJdataRAP[which(!is.na(matchRAP)),]
-
-# Find locations in Location dataframe that match locations in PJdata
-matches <- match(Location_data$Location, PJdata$Location)
-matchesRAP <- match(Location_dataRAP$Location, PJdataRAP$Location)
+PJdata<-PJdata[which(PJdata$Location %in% Location_data$Location[which(Location_data$Sample==4)]),]
+PJdataRAP<-PJdataRAP[which(PJdataRAP$Location %in% Location_dataRAP$Location[which(Location_dataRAP$Sample==4)]),]
 
 # Subset Location dataframe and pc matrix to keep only locations found in PJdata
-Location_data_subset <- Location_data[which(!is.na(matches)),]
-pc_mat_subset <- pc_mat[which(!is.na(matches)),]
+Location_data_subset <- Location_data[which(Location_data$Location %in% PJdata$Location),]
+pc_mat_subset <- pc_mat[Location_data_subset$Index,]
 
-Location_dataRAP_subset <- Location_dataRAP[which(!is.na(matchesRAP)),]
-pc_matRAP_subset <- pc_mat_RAP[which(!is.na(matchesRAP)),]
-
-# Remove data points with fire
-PJdata <- subset(PJdata,Fire==0) 
-PJdataRAP <- subset(PJdataRAP,Fire==0) 
+Location_dataRAP_subset <- Location_dataRAP[which(Location_dataRAP$Location %in% PJdataRAP$Location),]
+pc_matRAP_subset <- pc_mat_RAP[Location_dataRAP_subset$Index,]
 
 # Add variable to Location data subset that gives sequential ID to each pixel (i.e., location)
 Location_data_subset <-mutate(Location_data_subset,Pixel_ID=as.numeric(factor(Location, levels = unique(Location))))
@@ -55,56 +50,37 @@ Location_dataRAP_subset <-mutate(Location_dataRAP_subset,Pixel_ID=as.numeric(fac
 PJdata <- merge(PJdata,Location_data_subset)
 PJdataRAP <- merge(PJdataRAP,Location_data_subset)
 
-# Summarize climate variable to calculate spatially-varying climate normals
-PJdata_space <- PJdata %>% 
-	group_by(location.x,location.y) %>%
-	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
+year <- as.vector(c(PJdataRAP$Year_t,PJdataRAP$Year_t1[which(PJdataRAP$Year_t==max(PJdataRAP$Year_t))])) # vector of year for each percent cover observation
+PJdata <- mutate(PJdata,Year_ID_t=as.numeric(factor(Year_t, levels = unique(sort(year)))),
+								 Year_ID_t1=as.numeric(factor(Year_t1, levels = unique(sort(year)))))
+PJdataRAP <- mutate(PJdataRAP,Year_ID_t=as.numeric(factor(Year_t, levels = unique(sort(year)))),
+								 Year_ID_t1=as.numeric(factor(Year_t1, levels = unique(sort(year)))))
 
-PJdataRAP_space <- PJdataRAP %>%
-	group_by(location.x,location.y) %>%
-	summarise(PPT_mean=mean(PPT,na.rm=T), Tmin_mean=mean(Tmin,na.rm=T), Tmax_mean=mean(Tmax,na.rm=T))
-
-# Add spacially-varying climate variables, and calculate annual deviations from normals
-PJdata <- merge(PJdata,PJdata_space) %>%  
-	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
-
-PJdataRAP <- merge(PJdataRAP,PJdataRAP_space) %>%
-	mutate(PPT_dev=PPT-PPT_mean, Tmin_dev=Tmin-Tmin_mean, Tmax_dev=Tmax-Tmax_mean)
-
-# Scale predictor variables
-PJdata.scaled <- PJdata %>%	mutate_at(scale, .vars = vars(Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)) %>%
-	select(-c(PC_t_mask,d_PC_mask,PC_t1_mask))
-
-PJdataRAP.scaled <- PJdataRAP %>% mutate_at(scale, .vars = vars(Heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev)) %>%
-	select(-c(PC_t_mask,d_PC_mask,PC_t1_mask))
+# Remove data points with fire
+PJdata <- subset(PJdata,Fire==0) 
+PJdataRAP <- subset(PJdataRAP,Fire==0) 
 
 # Remove observations with NA
-PJdata.scaled <- na.omit(PJdata.scaled)
-PJdataRAP.scaled <- na.omit(PJdataRAP.scaled)
-
-# Subset data (only use to decrease time/memory when checking model code)
-#PJdata.scaled <- subset(PJdata.scaled,Year_t)
-#PJdataRAP.scaled <- subset(PJdataRAP.scaled,Year_t)
+PJdata <- na.omit(PJdata)
+PJdataRAP <- na.omit(PJdataRAP)
 
 # Prep percent cover data for stan model
-pc <- as.vector(c(PJdata.scaled$PC_t,PJdata.scaled$PC_t1[which(PJdata.scaled$Year_t==max(PJdata.scaled$Year_t))])) # vector of percent cover for ALL years
-year <- as.vector(c(PJdata.scaled$Year_t,PJdata.scaled$Year_t1[which(PJdata.scaled$Year_t==max(PJdata.scaled$Year_t))])) # vector of year for each percent cover observation
-year_ID=as.numeric(factor(year, levels = unique(sort(year)))) # vector of sequential year ID for each percent cover observation (used for indexing purposes)
-pixel <- as.vector(c(PJdata.scaled$Pixel_ID,PJdata.scaled$Pixel_ID[which(PJdata.scaled$Year_t==max(PJdata.scaled$Year_t))])) # vector of sequential pixel ID for each percent cover observation (used for indexing purposes)
+pc <- as.vector(c(PJdata$PC_t,PJdata$PC_t1[which(PJdata$Year_t==max(PJdata$Year_t))])) # vector of percent cover for ALL years
+year_ID <- as.numeric(c(PJdata$Year_ID_t,PJdata$Year_ID_t1[which(PJdata$Year_t==max(PJdata$Year_t))])) # vector of sequential year ID for each percent cover observation (used for indexing purposes)
+pixel <- as.vector(c(PJdata$Pixel_ID,PJdata$Pixel_ID[which(PJdata$Year_t==max(PJdata$Year_t))])) # vector of sequential pixel ID for each percent cover observation (used for indexing purposes)
 
 n_pc <- length(pc) # number of percent cover observations
-n_pixel <- nrow(pc_matRAP_subset) # number of pixels in percent cover matrix (this will be number of rows in latent state matrix)
-n_year <- length(unique(year)) # number of years (this will be number of columns in latent state matrix)
+n_year <- length(unique(year_ID)) # number of years (this will be number of columns in latent state matrix)
 
 # Repeat for RAP data
-pc_r <- as.vector(c(PJdataRAP.scaled$PC_t,PJdataRAP.scaled$PC_t1[which(PJdataRAP.scaled$Year_t==max(PJdataRAP.scaled$Year_t))])) # vector of percent cover for ALL years
+pc_r <- as.vector(c(PJdataRAP$PC_t,PJdataRAP$PC_t1[which(PJdataRAP$Year_t==max(PJdataRAP$Year_t))])) # vector of percent cover for ALL years
 pc_r[which(pc_r<min(pc))]<-min(pc)
-year_r <- as.vector(c(PJdataRAP.scaled$Year_t,PJdataRAP.scaled$Year_t1[which(PJdataRAP.scaled$Year_t==max(PJdataRAP.scaled$Year_t))])) # vector of year for each percent cover observation
-year_ID_r=as.numeric(factor(year_r, levels = unique(sort(year_r)))) # vector of sequential year ID for each percent cover observation (used for indexing purposes)
-pixel_r <- as.vector(c(PJdataRAP.scaled$Pixel_ID,PJdataRAP.scaled$Pixel_ID[which(PJdataRAP.scaled$Year_t==max(PJdataRAP.scaled$Year_t))])) # vector of sequential pixel ID for each percent cover observation (used for indexing purposes)
+year_ID_r <- as.numeric(c(PJdataRAP$Year_ID_t,PJdataRAP$Year_ID_t1[which(PJdataRAP$Year_t==max(PJdataRAP$Year_t))])) # vector of sequential year ID for each percent cover observation (used for indexing purposes)
+pixel_r <- as.vector(c(PJdataRAP$Pixel_ID,PJdataRAP$Pixel_ID[which(PJdataRAP$Year_t==max(PJdataRAP$Year_t))])) # vector of sequential pixel ID for each percent cover observation (used for indexing purposes)
 
 n_pc_r <- length(pc_r) # number of percent cover observations
-n_year_r <- length(unique(year_r)) # number of years (this will be number of columns in latent state matrix)
+n_year_r <- length(unique(year_ID_r)) # number of years (this will be number of columns in latent state matrix)
+n_pixel <- nrow(pc_matRAP_subset) # number of pixels in percent cover matrix (this will be number of rows in latent state matrix)
 
 rmse <- 9.6
 rmse_r <- 8.77
@@ -112,10 +88,10 @@ rmse_r <- 8.77
 ## Prep predictor variables
 
 # Calculate spatial "normals"
-ppt_mat_subset <- na.omit(total_ppt[which(!is.na(matches)),])
-tmin_mat_subset <- na.omit(ave_tmin[which(!is.na(matches)),])
-tmax_mat_subset <- na.omit(ave_tmax[which(!is.na(matches)),])
-heatload_subset <- na.omit(heatload_vec[which(!is.na(matches))])
+ppt_mat_subset <- total_ppt[Location_data_subset$Index,]
+tmin_mat_subset <- ave_tmin[Location_data_subset$Index,]
+tmax_mat_subset <- ave_tmax[Location_data_subset$Index,]
+heatload_subset <- heatload_vec[Location_data_subset$Index]
 
 PPT_mean_vec <- rowMeans(ppt_mat_subset)
 Tmin_mean_vec <- rowMeans(tmin_mat_subset)
@@ -130,6 +106,14 @@ heatload <- matrix(rep(heatload_subset,(n_year_r-1)),c(n_pixel,(n_year_r-1)))
 PPT_dev <- ppt_mat_subset-PPT_mean
 Tmin_dev <- tmin_mat_subset-Tmin_mean
 Tmax_dev <- tmax_mat_subset-Tmax_mean
+
+PPT_mean <- scale(PPT_mean)
+Tmin_mean <- scale(Tmin_mean)
+Tmax_mean <- scale(Tmax_mean)
+
+PPT_dev <- scale(PPT_dev)
+Tmin_dev <- scale(Tmin_dev)
+Tmax_dev <- scale(Tmax_dev)
 
 K <- 7 # number of predictors
 x <- array(c(heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev),c(n_pixel,(n_year_r-1),K)) # change from matrix to array (pixel x year x predictor) of non-density predictors
@@ -151,7 +135,6 @@ cat("
     int<lower=0> n_pixel;            // Total number of pixels in percent cover raster
     int<lower=0> n_year;             // Number of years of data (not RAP)
     int<lower=0> n_pc_r;             // N. observations (RAP)
-    //int<lower=0> n_pixel_r;          // Total number of pixels in percent cover raster (RAP)
     int<lower=0> n_year_r;           // Number of years of data (RAP)
     
     int<lower=0> K;                  // N. predictors 
@@ -208,7 +191,7 @@ cat("
     // Process Model
 
     for(t in 1:(n_year-1)){
-        log_pc[,t+1] - log_pc[,t] ~ normal(u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int,sigma_y);
+        log_pc[,t+1] ~ normal(log_pc[,t] + u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int,sigma_y);
     }
     
     }
@@ -225,7 +208,6 @@ cat("
     int<lower=0> n_pixel;                 // Total number of pixels in percent cover raster
     int<lower=0> n_year;                  // Number of years of data (not RAP)
     int<lower=0> n_pc_r;                  // N. observations (RAP)
-    //int<lower=0> n_pixel_r;               // Total number of pixels in percent cover raster (RAP)
     int<lower=0> n_year_r;                // Number of years of data (RAP)
     
     int<lower=0> K;                       // N. predictors 
@@ -283,7 +265,7 @@ cat("
     // Process Model
 
     for(t in 1:(n_year-1)){
-        log_pc[,t+1] - log_pc[,t] ~ normal(u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int + u_beta_pc*exp(log_pc[,t]),sigma_y);
+        log_pc[,t+1] ~ normal(log_pc[,t] + u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int + u_beta_pc*exp(log_pc[,t]),sigma_y);
     }
     
     }
@@ -300,7 +282,6 @@ cat("
     int<lower=0> n_pixel;                 // Total number of pixels in percent cover raster
     int<lower=0> n_year;                  // Number of years of data (not RAP)
     int<lower=0> n_pc_r;                  // N. observations (RAP)
-    //int<lower=0> n_pixel_r;               // Total number of pixels in percent cover raster (RAP)
     int<lower=0> n_year_r;                // Number of years of data (RAP)
     
     int<lower=0> K;                       // N. predictors 
@@ -359,7 +340,7 @@ cat("
     // Process Model
 
     for(t in 1:(n_year-1)){
-        log_pc[,t+1] - log_pc[,t] ~ normal(u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int + diag_pre_multiply(exp(log_pc[,t]),x[t])*u_beta_densint + u_beta_pc*exp(log_pc[,t]),sigma_y);
+        log_pc[,t+1] ~ normal(log_pc[,t] + u_beta0 + x[t]*u_beta + x_int[t]*u_beta_int + diag_pre_multiply(exp(log_pc[,t]),x[t])*u_beta_densint + u_beta_pc*exp(log_pc[,t]),sigma_y);
     }
     
     }
@@ -371,22 +352,4 @@ sink()
 pj_data <- list(K = K, I = I ,x = x_trans, x_int = x_int_trans, n_pixel = n_pixel, n_year = n_year, n_pc = n_pc, pc = pc, year = year_ID, pixel = pixel, sigma_pc = rmse,
 							n_year_r = n_year_r, n_pc_r = n_pc_r, pc_r = pc_r, year_r = year_ID_r, pixel_r = pixel_r, sigma_pc_r = rmse_r)
 
-rm(PJdata,PJdata_space,Location_data,Location_data_subset,pc_mat,pc_mat_subset,location.x,location.y,PJdata.scaled,pc,pixel,year,year_ID,
-	 matches,n_pc,n_pixel,n_year,rmse)
-rm(PJdataRAP,PJdataRAP_space,Location_dataRAP,Location_dataRAP_subset,pc_mat_RAP,pc_matRAP_subset,location.x.RAP,location.y.RAP,PJdataRAP.scaled,pc_r,pixel_r,year_r,year_ID_r,
-	 matchesRAP,n_pc_r,n_year_r,rmse_r)
-rm(x,x_trans,x_int,x_int_trans,K,heatload,heatload_subset,heatload_vec,total_ppt,ppt_mat_subset,PPT_mean,PPT_mean_vec,PPT_dev,
-	 ave_tmin,tmin_mat_subset,Tmin_mean,Tmin_mean_vec,Tmin_dev,ave_tmax,tmax_mat_subset,Tmax_mean,Tmax_mean_vec,Tmax_dev)
-
-options(mc.cores = parallel::detectCores())
-
-fit_pj_clim <- stan(file = 'pjcover_clim.stan', data = pj_data, pars = (c("u_beta0","u_beta","u_beta_int","sigma_y")),include=TRUE, 
-								 iter = 2000, warmup = 1000, chains = 3, refresh = 1)
-
-fit_pj_climdens <- stan(file = 'pjcover_climdens.stan', data = pj_data, pars = (c("log_pc")),include=FALSE, 
-							 iter = 2000, warmup = 1000, chains = 3, refresh = 1)
-
-fit_pj_climdensint <- stan(file = 'pjcover_climdensint.stan', data = pj_data, pars = (c("log_pc")),include=FALSE, 
-							 iter = 2000, warmup = 1000, chains = 3, refresh = 1, sample_file = 'fitPJ.csv')
-
-save(fit_pj_clim,fit_pj_climdens,fit_pj_climdensint,file="fit_PJ_out.rda")
+save(pj_data,file="stan_data_4.rda")
