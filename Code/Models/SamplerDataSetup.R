@@ -8,7 +8,17 @@ n_pixel <- nrow(pc_mat)
 #pc_mat[which((pc_mat[,4]-pc_mat[,3])<(-9)),4] <- NA
 #pc_mat_RAP[which((pc_mat_RAP[,20]-pc_mat_RAP[,19])<(-9)),20] <- NA
 pc_mat <- t(pc_mat)
-pc_mat <- rbind(matrix(NA,nrow=20,ncol=n_pixel),pc_mat)
+missing <- which(is.na(pc_mat),arr.ind=T)
+missing_list <- list("2000"=missing[which(missing[,1]==1),2],"2001"=missing[which(missing[,1]==2),2],
+										 "2002"=missing[which(missing[,1]==3),2],"2003"=missing[which(missing[,1]==4),2],
+										 "2004"=missing[which(missing[,1]==5),2],"2005"=missing[which(missing[,1]==6),2],
+										 "2006"=missing[which(missing[,1]==7),2],"2007"=missing[which(missing[,1]==8),2],
+										 "2008"=missing[which(missing[,1]==9),2],"2009"=missing[which(missing[,1]==10),2],
+										 "2010"=missing[which(missing[,1]==11),2],"2011"=missing[which(missing[,1]==12),2],
+										 "2012"=missing[which(missing[,1]==13),2],"2013"=missing[which(missing[,1]==14),2],
+										 "2014"=missing[which(missing[,1]==15),2],"2015"=missing[which(missing[,1]==16),2],
+										 "2016"=missing[which(missing[,1]==17),2])
+pc_mat <- rbind(matrix(NA,nrow=16,ncol=n_pixel),pc_mat,matrix(NA,nrow=4,ncol=n_pixel))
 pc_mat_RAP <- t(pc_mat_RAP)
 pc_mat_RAP[which(pc_mat_RAP<=0)] <- min(pc_mat_RAP[which(pc_mat_RAP>0)])
 
@@ -63,5 +73,5 @@ pc_mat_RAP <- pc_mat_RAP[,1:1000]
 X <- X[,1:1000,]
 Xdense <- Xdense[,1:1000,]
 
-save(pc_mat,pc_mat_RAP,X,Xdense,file="SamplerData.rda")
+save(pc_mat,pc_mat_RAP,X,Xdense,missing_list,file="SamplerData.rda")
 #matrix(1,(tmax-1),n_pixel),
