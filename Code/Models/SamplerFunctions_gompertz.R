@@ -42,7 +42,7 @@ sampleLatent<-function(Y1,Y2,y,X,Xall,Xdense=NA,s2,beta,o1,o2,Ndatasets,tmax,dd=
   if (Ndatasets[t]==2){
     Vi=1/o1+1/o2
     v=(Y1[t,]/o1)+(Y2[t,]/o2)
-    # Add if loop to fill v with Y1 values if Y2 values are missing
+    v[missing[[t]]] <- Y1[t,missing[[t]]]/o1
   }
   
   
