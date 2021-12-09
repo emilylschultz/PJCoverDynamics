@@ -23,12 +23,12 @@ mask <- raster(paste0(PC.path, "PJmask.tif"))
 
 # Set percent cover to NA where PJ are absent
 PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
-values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
+#values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
 
 # Rename rasters in stacks
 
 names(PJcover) <- as.character(1984:2020)
-#names(PJcover_mask) <- as.character(2000:2016)
+names(PJcover_mask) <- as.character(1984:2020)
 
 clim_months <- numeric(0) # vector to store year and month from 1980 to 2020
 for(i in 1980:2020){
@@ -46,7 +46,7 @@ names(tmax) <- clim_months
 	# Columns: Year t, Year t+1, location (center of pixel?), pc t, pc t+1, change in pc, heat load, total water year ppt (Oct-Sep),average water year tmin (Oct-Sep), average water year tmax (Oct-Sep)
 
 #Extract data from climate rasters and put in matrix format
-start_ind <- which(clim_months=="1984_10") # start with Oct 1984
+start_ind <- which(clim_months=="1982_10") # start with Oct 1982 (two year lag before first year of pj cover data)
 end_ind <- which(clim_months=="2020_9") # end with Sep 2020
 
 heatload_vec <- values(heatload)
@@ -57,7 +57,7 @@ tmax_mat <- as.matrix(tmax)[,start_ind:end_ind]
 total_ppt <- numeric(0)
 ave_tmin <- numeric(0)
 ave_tmax <- numeric(0)
-for (i in 1:36){
+for (i in 1:38){
 	sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
 	total_ppt <- cbind(total_ppt,sum_ppt) # add to ppt vector
 	sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
@@ -71,6 +71,10 @@ pc_mat_RAP <- as.matrix(PJcover)
 location.x.RAP = coordinates(PJcover)[,1]
 location.y.RAP = coordinates(PJcover)[,2]
 save(pc_mat_RAP,location.x.RAP,location.y.RAP,file="./Output/Climate_mat_RAP.rda")
+pc_mat_mask_RAP <- as.matrix(PJcover_mask)
+save(pc_mat_mask_RAP,location.x.RAP,location.y.RAP,file="./Output/PJcoverMask_mat_RAP.rda")
+noPJ <- which(values(mask)==0)
+save(noPJ,file="./Output/PJMask_mat.rda")
 
 # Save matrices of climate data
 save(total_ppt,ave_tmin,ave_tmax,heatload_vec,file="./Output/Climate_mat.rda")
@@ -93,8 +97,6 @@ PJdata$d_log_PC <- PJdata$log_PC_t1 - PJdata$log_PC_t
 PJdata$log_PC_t_pos <- log(PJdata$PC_t+2)
 PJdata$log_PC_t1_pos <- log(PJdata$PC_t1+2)
 PJdata$d_log_PC_pos <- PJdata$log_PC_t1_pos-PJdata$log_PC_t_pos
-
-PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
 head(PJdata)
 

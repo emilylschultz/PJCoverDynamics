@@ -12,14 +12,10 @@ tmax <- stack("./EnvData/tmaxStack.tif")
 heatload <-raster("./EnvData/heatload.tif")
 
 # Get percent cover raster data files
-PC.path <-  "./PJCover/"
-
-PCFiles <- list.files(path = PC.path, pattern = glob2rx("Clipped*.tif"), full.names = TRUE)
-
-PJcover <- stack(PCFiles)
+PJcover <- stack("./PJCover/PJStack_clipped.tif")
 
 # Upload PJ presence/absence data
-mask <- raster(paste0(PC.path, "PJmask.tif"))
+mask <- raster("./PJCover/PJmask.tif")
 
 # Set percent cover to NA where PJ are absent (confirm this with Bob)
 PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
@@ -70,6 +66,8 @@ pc_mat <- as.matrix(PJcover)[,1:17]
 location.x = coordinates(PJcover)[,1]
 location.y = coordinates(PJcover)[,2]
 save(pc_mat,location.x,location.y,file="./Output/PJcover_mat.rda")
+pc_mat_mask <- as.matrix(PJcover_mask)[,1:17]
+save(pc_mat_mask,location.x,location.y,file="./Output/PJcoverMask_mat.rda")
 
 PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover)))), 
 										 Year_t1 = sort(rep(2001:2016,(nrow(PJcover)*ncol(PJcover)))),
@@ -86,8 +84,6 @@ PJdata$d_PC_mask <- PJdata$PC_t1_mask - PJdata$PC_t_mask # calculate change in p
 PJdata$log_PC_t <- log(PJdata$PC_t)
 PJdata$log_PC_t1 <- log(PJdata$PC_t1)
 PJdata$d_log_PC <- PJdata$log_PC_t1 - PJdata$log_PC_t
-
-PJdata <- PJdata[-which(is.na(PJdata$PPT)),]
 
 head(PJdata)
 
