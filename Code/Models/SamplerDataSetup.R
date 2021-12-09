@@ -1,6 +1,115 @@
+load("./Output/PJcoverMask_mat.rda")
+load("./Output/PJcoverMask_mat_RAP.rda")
+load("./OUtput/Climate_mat.rda")
+load("./Output/PJMask_mat.rda")
+
+pc_mat <- pc_mat_mask[-noPJ,]
+pc_mat_RAP <- pc_mat_mask_RAP[-noPJ,]
+total_ppt <- total_ppt[-noPJ,]
+ave_tmin <- ave_tmin[-noPJ,]
+ave_tmax <- ave_tmax[-noPJ,]
+heatload_vec <- heatload_vec[-noPJ]
+
+tmax <- 37
+n_pixel <- nrow(pc_mat)
+
+#pc_mat[which((pc_mat[,4]-pc_mat[,3])<(-9)),4] <- NA
+#pc_mat_RAP[which((pc_mat_RAP[,20]-pc_mat_RAP[,19])<(-9)),20] <- NA
+pc_mat <- t(pc_mat)
+missing <- which(is.na(pc_mat),arr.ind=T)
+missing_list <- list("2000"=missing[which(missing[,1]==1),2],"2001"=missing[which(missing[,1]==2),2],
+										 "2002"=missing[which(missing[,1]==3),2],"2003"=missing[which(missing[,1]==4),2],
+										 "2004"=missing[which(missing[,1]==5),2],"2005"=missing[which(missing[,1]==6),2],
+										 "2006"=missing[which(missing[,1]==7),2],"2007"=missing[which(missing[,1]==8),2],
+										 "2008"=missing[which(missing[,1]==9),2],"2009"=missing[which(missing[,1]==10),2],
+										 "2010"=missing[which(missing[,1]==11),2],"2011"=missing[which(missing[,1]==12),2],
+										 "2012"=missing[which(missing[,1]==13),2],"2013"=missing[which(missing[,1]==14),2],
+										 "2014"=missing[which(missing[,1]==15),2],"2015"=missing[which(missing[,1]==16),2],
+										 "2016"=missing[which(missing[,1]==17),2])
+#pc_mat <- rbind(matrix(NA,nrow=16,ncol=n_pixel),pc_mat,matrix(NA,nrow=4,ncol=n_pixel))
+pc_mat_RAP <- t(pc_mat_RAP)
+#pc_mat_RAP[which(pc_mat_RAP<=0)] <- min(pc_mat_RAP[which(pc_mat_RAP>0)])
+
+PPT_mean_vec <- rowMeans(total_ppt)
+Tmin_mean_vec <- rowMeans(ave_tmin)
+Tmax_mean_vec <- rowMeans(ave_tmax)
+
+PPT_mean <- matrix(rep(PPT_mean_vec,(tmax+1)),c(n_pixel,(tmax+1)))
+Tmin_mean <- matrix(rep(Tmin_mean_vec,(tmax+1)),c(n_pixel,(tmax+1)))
+Tmax_mean <- matrix(rep(Tmax_mean_vec,(tmax+1)),c(n_pixel,(tmax+1)))
+heatload <- matrix(rep(heatload_vec,(tmax-1)),c(n_pixel,(tmax-1)))
+
+# Calculate deviations from normals
+PPT_dev <- total_ppt-PPT_mean
+Tmin_dev <- ave_tmin-Tmin_mean
+Tmax_dev <- ave_tmax-Tmax_mean
+
+PPT_mean <- scale(PPT_mean)
+Tmin_mean <- scale(Tmin_mean)
+Tmax_mean <- scale(Tmax_mean)
+
+PPT_dev <- scale(PPT_dev)
+Tmin_dev <- scale(Tmin_dev)
+Tmax_dev <- scale(Tmax_dev)
+
+PPT_mean <- t(PPT_mean)
+Tmin_mean <- t(Tmin_mean)
+Tmax_mean <- t(Tmax_mean)
+heatload <- t(heatload)
+
+PPT_dev<- t(PPT_dev)
+Tmin_dev <- t(Tmin_dev)
+Tmax_dev <- t(Tmax_dev)
+
+PPT_dev_lag <- matrix(NA,tmax-1,ncol(PPT_dev))
+Tmin_dev_lag <- matrix(NA,tmax-1,ncol(PPT_dev))
+Tmax_dev_lag <- matrix(NA,tmax-1,ncol(PPT_dev))
+
+for(i in 3:38){
+	PPT_dev_lag[i-2,]<-colMeans(PPT_dev[(i-2):i,])
+	Tmin_dev_lag[i-2,]<-colMeans(Tmin_dev[(i-2):i,])
+	Tmax_dev_lag[i-2,]<-colMeans(Tmax_dev[(i-2):i,])
+}
+
+PPT_mean <- PPT_mean[3:38,]
+Tmax_mean <- Tmax_mean[3:38,]
+Tmin_mean <- Tmin_mean[3:38,]
+
+Xdense <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev),c((tmax-1),n_pixel,8)) # change from matrix to array (pixel x year x predictor) of non-density predictors
+X <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev,
+						 heatload*PPT_mean,heatload*Tmin_mean,heatload*Tmax_mean,heatload*PPT_dev,heatload*Tmin_dev,heatload*Tmax_dev,
+								 PPT_mean*Tmin_mean,PPT_mean*Tmax_mean,Tmin_mean*Tmax_mean,
+								 PPT_mean*PPT_dev,Tmin_mean*Tmin_dev,Tmax_mean*Tmax_dev),c((tmax-1),n_pixel,20)) # change from matrix to array (pixel x year x predictor) of non-density predictors
+
+Xdense_lag <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev_lag,Tmin_dev_lag,Tmax_dev_lag),c((tmax-1),n_pixel,8)) # change from matrix to array (pixel x year x predictor) of non-density predictors
+X_lag <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev_lag,Tmin_dev_lag,Tmax_dev_lag,
+						 heatload*PPT_mean,heatload*Tmin_mean,heatload*Tmax_mean,heatload*PPT_dev_lag,heatload*Tmin_dev_lag,heatload*Tmax_dev_lag,
+						 PPT_mean*Tmin_mean,PPT_mean*Tmax_mean,Tmin_mean*Tmax_mean,
+						 PPT_mean*PPT_dev_lag,Tmin_mean*Tmin_dev_lag,Tmax_mean*Tmax_dev_lag),c((tmax-1),n_pixel,20)) # change from matrix to array (pixel x year x predictor) of non-density predictors
+
+#sample = sample.int(4,n_pixel,replace = T)
+#save(sample,file="location_sample.rda")
+#load("location_sample.rda")
+
+#pc_mat<- pc_mat[,which(sample==1)]
+#pc_mat_RAP <- pc_mat_RAP[,which(sample==1)]
+#X <- X[,which(sample==1),]
+#Xdense <- Xdense[,which(sample==1),]
+
+#pc_mat<- pc_mat[,1:1000]
+#pc_mat_RAP <- pc_mat_RAP[,1:1000]
+#X <- X[,1:1000,]
+#Xdense <- Xdense[,1:1000,]
+
+save(pc_mat,pc_mat_RAP,X,Xdense,file="SamplerDataMask.rda")
+save(pc_mat,pc_mat_RAP,X_lag,Xdense_lag,file="SamplerDataMask_Lag.rda")
+
+
+# Prep data without removing locations where PJ is absent
 load("./Output/PJcover_mat.rda")
 load("./Output/PJcover_mat_RAP.rda")
 load("./OUtput/Climate_mat.rda")
+load("./Output/PJMask_mat.rda")
 
 tmax <- 37
 n_pixel <- nrow(pc_mat)
@@ -56,8 +165,8 @@ Tmax_dev <- t(Tmax_dev)
 Xdense <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev),c((tmax-1),n_pixel,8)) # change from matrix to array (pixel x year x predictor) of non-density predictors
 X <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmin_mean,Tmax_mean,PPT_dev,Tmin_dev,Tmax_dev,
 						 heatload*PPT_mean,heatload*Tmin_mean,heatload*Tmax_mean,heatload*PPT_dev,heatload*Tmin_dev,heatload*Tmax_dev,
-								 PPT_mean*Tmin_mean,PPT_mean*Tmax_mean,Tmin_mean*Tmax_mean,
-								 PPT_mean*PPT_dev,Tmin_mean*Tmin_dev,Tmax_mean*Tmax_dev),c((tmax-1),n_pixel,20)) # change from matrix to array (pixel x year x predictor) of non-density predictors
+						 PPT_mean*Tmin_mean,PPT_mean*Tmax_mean,Tmin_mean*Tmax_mean,
+						 PPT_mean*PPT_dev,Tmin_mean*Tmin_dev,Tmax_mean*Tmax_dev),c((tmax-1),n_pixel,20)) # change from matrix to array (pixel x year x predictor) of non-density predictors
 
 #sample = sample.int(4,n_pixel,replace = T)
 #save(sample,file="location_sample.rda")
