@@ -12,14 +12,19 @@ PJFiles <- list.files(path = PJ.path, pattern = glob2rx("*.tif"), full.names = T
 
 pjcover <- stack(PJFiles)
 
-clipped <- raster("./PJcover/Clipped_2000.tif")
+pjmask <- raster("./PJCover/PJ/US_200EVT_pj_aoi1.tif")
+
+clipped <- raster("./PJcover/PJmask_old.tif")
 
 extent <- extent(clipped)
 extent <- extent + c(-10000,-9000,6500,0)
 
 pjcover <- crop(pjcover,extent)
-
 plot(pjcover)
 
+pjmask <- crop(pjmask,extent)
+plot(pjmask)
+
 writeRaster(pjcover, "./PJCover/PJStack_clipped.tif", overwrite = T)
+writeRaster(pjmask, "./PJCover/PJmask.tif", overwrite = T)
 
