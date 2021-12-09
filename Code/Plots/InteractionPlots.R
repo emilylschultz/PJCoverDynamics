@@ -316,41 +316,290 @@ predictionPPT_highTmin <- predictionPPT_midTmin <- predictionPPT_lowTmin <- matr
 
 for(s in 1:length(samp)){
   i <- samp[s]
-  predictionHeatload_highTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin_rng[2] +
+  predictionPPT_highTmin[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin_rng[2] +
     betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
     betaOut[i,10]*heatload*tmin_rng[2] + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
     betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin_rng[2] + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin_rng[2]*tmax + 
     betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin_rng[2]*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
   
-  predictionHeatload_midTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+  predictionPPT_midTmin[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
     betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
     betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
     betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
     betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
   
-  predictionHeatload_lowTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin_rng[1] +
+  predictionPPT_lowTmin[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin_rng[1] +
     betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
     betaOut[i,10]*heatload*tmin_rng[1] + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
     betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin_rng[1] + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin_rng[1]*tmax + 
     betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin_rng[1]*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
 }
-predictionHeatload_highTmaxdev_exp <- exp(predictionHeatload_highTmaxdev)
-predictionHeatload_midTmaxdev_exp <- exp(predictionHeatload_midTmaxdev)
-predictionHeatload_lowTmaxdev_exp <- exp(predictionHeatload_lowTmaxdev)
-ci.Heatload_highTmaxdev <- apply(predictionHeatload_highTmaxdev_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
-ci.Heatload_midTmaxdev <- apply(predictionHeatload_midTmaxdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
-ci.Heatload_lowTmaxdev <- apply(predictionHeatload_lowTmaxdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
-ci.Heatload_highTmaxdev.df <- data.frame(heatload = heatload, median = ci.Heatload_highTmaxdev[2,], ci.low = ci.Heatload_highTmaxdev[1,], ci.high = ci.Heatload_highTmaxdev[3,], ci.group = "High Tmaxdev")
-ci.Heatload_midTmaxdev.df <- data.frame(heatload = heatload, median = ci.Heatload_midTmaxdev[2,], ci.low = ci.Heatload_midTmaxdev[1,], ci.high = ci.Heatload_midTmaxdev[3,], ci.group = "Mid Tmaxdev")
-ci.Heatload_lowTmaxdev.df <- data.frame(heatload = heatload, median = ci.Heatload_lowTmaxdev[2,], ci.low = ci.Heatload_lowTmaxdev[1,], ci.high = ci.Heatload_lowTmaxdev[3,], ci.group = "Low Tmaxdev")
-Heatload_Tmaxdev <- rbind(ci.Heatload_highTmaxdev.df, ci.Heatload_midTmaxdev.df, ci.Heatload_lowTmaxdev.df)
-ggplot(data = Heatload_Tmaxdev, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+predictionPPT_highTmin_exp <- exp(predictionPPT_highTmin)
+predictionPPT_midTmin_exp <- exp(predictionPPT_midTmin)
+predictionPPT_lowTmin_exp <- exp(predictionPPT_lowTmin)
+ci.PPT_highTmin <- apply(predictionPPT_highTmin_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.PPT_midTmin <- apply(predictionPPT_midTmin_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_lowTmin <- apply(predictionPPT_lowTmin_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_highTmin.df <- data.frame(ppt = ppt, median = ci.PPT_highTmin[2,], ci.low = ci.PPT_highTmin[1,], ci.high = ci.PPT_highTmin[3,], ci.group = "High Tmin")
+ci.PPT_midTmin.df <- data.frame(ppt = ppt, median = ci.PPT_midTmin[2,], ci.low = ci.PPT_midTmin[1,], ci.high = ci.PPT_midTmin[3,], ci.group = "Mid Tmin")
+ci.PPT_lowTmin.df <- data.frame(ppt = ppt, median = ci.PPT_lowTmin[2,], ci.low = ci.PPT_lowTmin[1,], ci.high = ci.PPT_lowTmin[3,], ci.group = "Low Tmin")
+PPT_Tmin <- rbind(ci.PPT_highTmin.df, ci.PPT_midTmin.df, ci.PPT_lowTmin.df)
+ggplot(data = PPT_Tmin, aes(x = ppt, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
   scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
   geom_line() + 
   scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
   ylab("Predicted percent cover") 
 
+#PPT and Tmax
+pptrng <- range(Xall[,,3],na.rm = TRUE) #setting range for heatload
+ppt <- seq(pptrng[1], pptrng[2], by = 0.01)
+x <- mean(meanLatent)
+heatload <- mean(Xall[,,2])
+ppt_dev <- mean(Xall[,,6])
+tmin <- mean(Xall[,,4])
+tmin_dev <- mean(Xall[,,7])
+tmax <- mean(Xall[,,5])
+tmax_dev <- mean(Xall[,,8])
+tmax_rng <- quantile(Xall[,,5], c(0.2, 0.8))
+predictionPPT_highTmax <- predictionPPT_midTmax <- predictionPPT_lowTmax <- matrix(NA, length(samp), length(heatload)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionPPT_highTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax_rng[2] + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax_rng[2] + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax_rng[2] + betaOut[i,17]*tmin*tmax_rng[2] + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax_rng[2]*tmax_dev + x
+  
+  predictionPPT_midTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionPPT_lowTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax_rng[1] + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax_rng[1] + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax_rng[1] + betaOut[i,17]*tmin*tmax_rng[1] + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax_rng[1]*tmax_dev + x
+}
+predictionPPT_highTmax_exp <- exp(predictionPPT_highTmax)
+predictionPPT_midTmax_exp <- exp(predictionPPT_midTmax)
+predictionPPT_lowTmax_exp <- exp(predictionPPT_lowTmax)
+ci.PPT_highTmax <- apply(predictionPPT_highTmax_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.PPT_midTmax <- apply(predictionPPT_midTmax_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_lowTmax <- apply(predictionPPT_lowTmax_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_highTmax.df <- data.frame(ppt = ppt, median = ci.PPT_highTmax[2,], ci.low = ci.PPT_highTmax[1,], ci.high = ci.PPT_highTmax[3,], ci.group = "High Tmax")
+ci.PPT_midTmax.df <- data.frame(ppt = ppt, median = ci.PPT_midTmax[2,], ci.low = ci.PPT_midTmax[1,], ci.high = ci.PPT_midTmax[3,], ci.group = "Mid Tmax")
+ci.PPT_lowTmax.df <- data.frame(ppt = ppt, median = ci.PPT_lowTmax[2,], ci.low = ci.PPT_lowTmax[1,], ci.high = ci.PPT_lowTmax[3,], ci.group = "Low Tmax")
+PPT_Tmax <- rbind(ci.PPT_highTmax.df, ci.PPT_midTmax.df, ci.PPT_lowTmax.df)
+ggplot(data = PPT_Tmax, aes(x = ppt, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmin and Tmax
+tminrng <- range(Xall[,,4],na.rm = TRUE) #setting range for heatload
+tmin <- seq(pptrng[1], pptrng[2], by = 0.01)
+x <- mean(meanLatent)
+heatload <- mean(Xall[,,2])
+ppt <- mean(Xall[,,3])
+ppt_dev <- mean(Xall[,,6])
+tmin_dev <- mean(Xall[,,7])
+tmax <- mean(Xall[,,5])
+tmax_dev <- mean(Xall[,,8])
+tmax_rng <- quantile(Xall[,,5], c(0.2, 0.8))
+predictionTmin_highTmax <- predictionTmin_midTmax <- predictionTmin_lowTmax <- matrix(NA, length(samp), length(heatload)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmin_highTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax_rng[2] + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax_rng[2] + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax_rng[2] + betaOut[i,17]*tmin*tmax_rng[2] + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax_rng[2]*tmax_dev + x
+  
+  predictionTmin_midTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionTmin_lowTmax[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax_rng[1] + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax_rng[1] + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax_rng[1] + betaOut[i,17]*tmin*tmax_rng[1] + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax_rng[1]*tmax_dev + x
+}
+predictionTmin_highTmax_exp <- exp(predictionTmin_highTmax)
+predictionTmin_midTmax_exp <- exp(predictionTmin_midTmax)
+predictionTmin_lowTmax_exp <- exp(predictionTmin_lowTmax)
+ci.Tmin_highTmax <- apply(predictionTmin_highTmax_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmin_midTmax <- apply(predictionTmin_midTmax_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_lowTmax <- apply(predictionTmin_lowTmax_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_highTmax.df <- data.frame(tmin = tmin, median = ci.Tmin_highTmax[2,], ci.low = ci.Tmin_highTmax[1,], ci.high = ci.Tmin_highTmax[3,], ci.group = "High Tmax")
+ci.Tmin_midTmax.df <- data.frame(tmin = tmin, median = ci.Tmin_midTmax[2,], ci.low = ci.Tmin_midTmax[1,], ci.high = ci.Tmin_midTmax[3,], ci.group = "Mid Tmax")
+ci.Tmin_lowTmax.df <- data.frame(tmin = tmin, median = ci.Tmin_lowTmax[2,], ci.low = ci.Tmin_lowTmax[1,], ci.high = ci.Tmin_lowTmax[3,], ci.group = "Low Tmax")
+Tmin_Tmax <- rbind(ci.Tmin_highTmax.df, ci.Tmin_midTmax.df, ci.Tmin_lowTmax.df)
+ggplot(data = Tmin_Tmax, aes(x = tmin, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#PPT and PPT dev
+pptrng <- range(Xall[,,3],na.rm = TRUE) #setting range for heatload
+ppt <- seq(pptrng[1], pptrng[2], by = 0.01)
+x <- mean(meanLatent)
+heatload <- mean(Xall[,,2])
+ppt_dev <- mean(Xall[,,6])
+tmin <- mean(Xall[,,4])
+tmin_dev <- mean(Xall[,,7])
+tmax <- mean(Xall[,,5])
+tmax_dev <- mean(Xall[,,8])
+ppt_dev_rng <- quantile(Xall[,,6], c(0.2, 0.8))
+predictionPPT_highPPTdev <- predictionPPT_midPPTdev <- predictionPPT_lowPPTdev <- matrix(NA, length(samp), length(heatload)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionPPT_highPPTdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev_rng[2] + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev_rng[2] + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev_rng[2] + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionPPT_midPPTdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionPPT_lowPPTdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev_rng[1] + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev_rng[1] + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev_rng[1] + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+}
+predictionPPT_highPPTdev_exp <- exp(predictionPPT_highPPTdev)
+predictionPPT_midPPTdev_exp <- exp(predictionPPT_midPPTdev)
+predictionPPT_lowPPTdev_exp <- exp(predictionPPT_lowPPTdev)
+ci.PPT_highPPTdev <- apply(predictionPPT_highPPTdev_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.PPT_midPPTdev <- apply(predictionPPT_midPPTdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_lowPPTdev <- apply(predictionPPT_lowPPTdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_highPPTdev.df <- data.frame(ppt = ppt, median = ci.PPT_highPPTdev[2,], ci.low = ci.PPT_highPPTdev[1,], ci.high = ci.PPT_highPPTdev[3,], ci.group = "High PPTdev")
+ci.PPT_midPPTdev.df <- data.frame(ppt = ppt, median = ci.PPT_midPPTdev[2,], ci.low = ci.PPT_midPPTdev[1,], ci.high = ci.PPT_midPPTdev[3,], ci.group = "Mid PPTdev")
+ci.PPT_lowPPTdev.df <- data.frame(ppt = ppt, median = ci.PPT_lowPPTdev[2,], ci.low = ci.PPT_lowPPTdev[1,], ci.high = ci.PPT_lowPPTdev[3,], ci.group = "Low PPTdev")
+PPT_PPTdev <- rbind(ci.PPT_highPPTdev.df, ci.PPT_midPPTdev.df, ci.PPT_lowPPTdev.df)
+ggplot(data = PPT_PPTdev, aes(x = ppt, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmin and Tmin dev
+tminrng <- range(Xall[,,4],na.rm = TRUE) #setting range for heatload
+tmin <- seq(pptrng[1], pptrng[2], by = 0.01)
+x <- mean(meanLatent)
+heatload <- mean(Xall[,,2])
+ppt <- mean(Xall[,,3])
+ppt_dev <- mean(Xall[,,6])
+tmin_dev <- mean(Xall[,,7])
+tmax <- mean(Xall[,,5])
+tmax_dev <- mean(Xall[,,8])
+tmin_dev_rng <- quantile(Xall[,,7], c(0.2, 0.8))
+predictionTmin_highTmindev <- predictionTmin_midTmindev <- predictionTmin_lowTmindev <- matrix(NA, length(samp), length(heatload)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmin_highTmindev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev_rng[2] + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev_rng[2] +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev_rng[2] + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionTmin_midTmindev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionTmin_lowTmindev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev_rng[1] + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev_rng[1] +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev_rng[1] + betaOut[i,20]*tmax*tmax_dev + x
+}
+predictionTmin_highTmindev_exp <- exp(predictionTmin_highTmindev)
+predictionTmin_midTmindev_exp <- exp(predictionTmin_midTmindev)
+predictionTmin_lowTmindev_exp <- exp(predictionTmin_lowTmindev)
+ci.Tmin_highTmindev <- apply(predictionTmin_highTmindev_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmin_midTmindev <- apply(predictionTmin_midTmindev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_lowTmindev <- apply(predictionTmin_lowTmindev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_highTmindev.df <- data.frame(tmin = tmin, median = ci.Tmin_highTmindev[2,], ci.low = ci.Tmin_highTmindev[1,], ci.high = ci.Tmin_highTmindev[3,], ci.group = "High Tmindev")
+ci.Tmin_midTmindev.df <- data.frame(tmin = tmin, median = ci.Tmin_midTmindev[2,], ci.low = ci.Tmin_midTmindev[1,], ci.high = ci.Tmin_midTmindev[3,], ci.group = "Mid Tmindev")
+ci.Tmin_lowTmindev.df <- data.frame(tmin = tmin, median = ci.Tmin_lowTmindev[2,], ci.low = ci.Tmin_lowTmindev[1,], ci.high = ci.Tmin_lowTmindev[3,], ci.group = "Low Tmindev")
+Tmin_Tmindev <- rbind(ci.Tmin_highTmindev.df, ci.Tmin_midTmindev.df, ci.Tmin_lowTmindev.df)
+ggplot(data = Tmin_Tmindev, aes(x = tmin, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmax and Tmax dev
+tmaxrng <- range(Xall[,,5],na.rm = TRUE) #setting range for heatload
+tmax <- seq(pptrng[1], pptrng[2], by = 0.01)
+x <- mean(meanLatent)
+heatload <- mean(Xall[,,2])
+ppt <- mean(Xall[,,3])
+ppt_dev <- mean(Xall[,,6])
+tmin <- mean(Xall[,,4])
+tmin_dev <- mean(Xall[,,7])
+tmax_dev <- mean(Xall[,,8])
+tmax_dev_rng <- quantile(Xall[,,8], c(0.2, 0.8))
+predictionTmax_highTmaxdev <- predictionTmax_midTmaxdev <- predictionTmax_lowTmaxdev <- matrix(NA, length(samp), length(heatload)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmax_highTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev_rng[2] + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev_rng[2] + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev_rng[2] + x
+  
+  predictionTmax_midTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev + x
+  
+  predictionTmax_lowTmaxdev[s,] <- betaOut[i,1] + betaOut[i,2]*heatload + betaOut[i,3]*ppt + betaOut[i,4]*tmin +
+    betaOut[i,5]*tmax + betaOut[i,6]*ppt_dev + betaOut[i,7]*tmin_dev + betaOut[i,8]*tmax_dev_rng[1] + betaOut[i,9]*heatload*ppt +
+    betaOut[i,10]*heatload*tmin + betaOut[i,11]*heatload*tmax + betaOut[i,12]*heatload*ppt_dev + betaOut[i,13]*heatload*tmin_dev +
+    betaOut[i,14]*heatload*tmax_dev_rng[1] + betaOut[i,15]*ppt*tmin + betaOut[i,16]*ppt*tmax + betaOut[i,17]*tmin*tmax + 
+    betaOut[i,18]*ppt*ppt_dev + betaOut[i,19]*tmin*tmin_dev + betaOut[i,20]*tmax*tmax_dev_rng[1] + x
+}
+predictionTmax_highTmaxdev_exp <- exp(predictionTmax_highTmaxdev)
+predictionTmax_midTmaxdev_exp <- exp(predictionTmax_midTmaxdev)
+predictionTmax_lowTmaxdev_exp <- exp(predictionTmax_lowTmaxdev)
+ci.Tmax_highTmaxdev <- apply(predictionTmax_highTmaxdev_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmax_midTmaxdev <- apply(predictionTmax_midTmaxdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmax_lowTmaxdev <- apply(predictionTmax_lowTmaxdev_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmax_highTmaxdev.df <- data.frame(tmax = tmax, median = ci.Tmax_highTmaxdev[2,], ci.low = ci.Tmax_highTmaxdev[1,], ci.high = ci.Tmax_highTmaxdev[3,], ci.group = "High Tmaxdev")
+ci.Tmax_midTmaxdev.df <- data.frame(tmax = tmax, median = ci.Tmax_midTmaxdev[2,], ci.low = ci.Tmax_midTmaxdev[1,], ci.high = ci.Tmax_midTmaxdev[3,], ci.group = "Mid Tmaxdev")
+ci.Tmax_lowTmaxdev.df <- data.frame(tmax = tmax, median = ci.Tmax_lowTmaxdev[2,], ci.low = ci.Tmax_lowTmaxdev[1,], ci.high = ci.Tmax_lowTmaxdev[3,], ci.group = "Low Tmaxdev")
+Tmax_Tmaxdev <- rbind(ci.Tmax_highTmaxdev.df, ci.Tmax_midTmaxdev.df, ci.Tmax_lowTmaxdev.df)
+ggplot(data = Tmax_Tmaxdev, aes(x = tmax, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmax, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
 
 
 
