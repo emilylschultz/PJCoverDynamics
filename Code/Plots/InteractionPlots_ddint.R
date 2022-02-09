@@ -1,11 +1,13 @@
 library(ggplot2)
 
-predict_fun <- function(coef=betaOut,heatload=heatload_mean,ppt=ppt_mean,tmin=tmin_mean,tmax=tmax_mean,ppt_dev=ppt_dev_mean,tmin_dev=tmin_dev_mean,tmax_dev=tmax_dev_mean,dens=dens_mean){
+predict_fun <- function(coef=betaOut_ddint,heatload=heatload_mean,ppt=ppt_mean,tmin=tmin_mean,tmax=tmax_mean,ppt_dev=ppt_dev_mean,tmin_dev=tmin_dev_mean,tmax_dev=tmax_dev_mean,dens=dens_mean){
   coef[i,1] + coef[i,2]*heatload + coef[i,3]*ppt + coef[i,4]*tmin +
     coef[i,5]*tmax + coef[i,6]*ppt_dev + coef[i,7]*tmin_dev + coef[i,8]*tmax_dev + coef[i,9]*heatload*ppt +
     coef[i,10]*heatload*tmin + coef[i,11]*heatload*tmax + coef[i,12]*heatload*ppt_dev + coef[i,13]*heatload*tmin_dev +
     coef[i,14]*heatload*tmax_dev + coef[i,15]*ppt*tmin + coef[i,16]*ppt*tmax + coef[i,17]*tmin*tmax + 
-    coef[i,18]*ppt*ppt_dev + coef[i,19]*tmin*tmin_dev + coef[i,20]*tmax*tmax_dev + dens
+    coef[i,18]*ppt*ppt_dev + coef[i,19]*tmin*tmin_dev + coef[i,20]*tmax*tmax_dev + coef[i,21]*dens +
+    coef[i,22]*dens*heatload + coef[i,23]*dens*ppt + coef[i,24]*dens*tmin + coef[i,25]*dens*tmax +
+    coef[i,26]*dens*ppt_dev + coef[i,27]*dens*tmin_dev + coef[i,28]*dens*tmax_dev
 }
 #INTERACTION PLOTS
 samp <- sample(seq((burnin+1),iter),1000)
@@ -393,6 +395,204 @@ ci.Tmax_lowTmaxdev.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_lowTmaxdev
 Tmax_Tmaxdev <- rbind(ci.Tmax_highTmaxdev.df, ci.Tmax_midTmaxdev.df, ci.Tmax_lowTmaxdev.df)
 ggplot(data = Tmax_Tmaxdev, aes(x = tmax, y = median, color = ci.group)) +
   geom_ribbon(aes(x = tmax, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+
+#Heatload and density
+predictionHeatload_highDens <- predictionHeatload_midDens <- predictionHeatload_lowDens <- matrix(NA, length(samp), length(heatload_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionHeatload_highDens[s,] <- predict_fun(heatload=heatload_seq,dens=dens_quant[2])
+  
+  predictionHeatload_midDens[s,] <- predict_fun(heatload=heatload_seq,dens=dens_mean)
+  
+  predictionHeatload_lowDens[s,] <- predict_fun(heatload=heatload_seq,dens=dens_quant[1])
+}
+predictionHeatload_highDens_exp <- exp(predictionHeatload_highDens)
+predictionHeatload_midDens_exp <- exp(predictionHeatload_midDens)
+predictionHeatload_lowDens_exp <- exp(predictionHeatload_lowDens)
+ci.Heatload_highDens <- apply(predictionHeatload_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Heatload_midDens <- apply(predictionHeatload_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Heatload_lowDens <- apply(predictionHeatload_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Heatload_highDens.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_highDens[2,], ci.low = ci.Heatload_highDens[1,], ci.high = ci.Heatload_highDens[3,], ci.group = "High Dens")
+ci.Heatload_midDens.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_midDens[2,], ci.low = ci.Heatload_midDens[1,], ci.high = ci.Heatload_midDens[3,], ci.group = "Mid Dens")
+ci.Heatload_lowDens.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowDens[2,], ci.low = ci.Heatload_lowDens[1,], ci.high = ci.Heatload_lowDens[3,], ci.group = "Low Dens")
+Heatload_Dens <- rbind(ci.Heatload_highDens.df, ci.Heatload_midDens.df, ci.Heatload_lowDens.df)
+ggplot(data = Heatload_Dens, aes(x = heatload, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#PPT and density
+predictionPPT_highDens <- predictionPPT_midDens <- predictionPPT_lowDens <- matrix(NA, length(samp), length(ppt_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionPPT_highDens[s,] <- predict_fun(ppt=ppt_seq,dens=dens_quant[2])
+  
+  predictionPPT_midDens[s,] <- predict_fun(ppt=ppt_seq,dens=dens_mean)
+  
+  predictionPPT_lowDens[s,] <- predict_fun(ppt=ppt_seq,dens=dens_quant[1])
+}
+predictionPPT_highDens_exp <- exp(predictionPPT_highDens)
+predictionPPT_midDens_exp <- exp(predictionPPT_midDens)
+predictionPPT_lowDens_exp <- exp(predictionPPT_lowDens)
+ci.PPT_highDens <- apply(predictionPPT_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.PPT_midDens <- apply(predictionPPT_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_lowDens <- apply(predictionPPT_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPT_highDens.df <- data.frame(ppt = ppt_seq, median = ci.PPT_highDens[2,], ci.low = ci.PPT_highDens[1,], ci.high = ci.PPT_highDens[3,], ci.group = "High Dens")
+ci.PPT_midDens.df <- data.frame(ppt = ppt_seq, median = ci.PPT_midDens[2,], ci.low = ci.PPT_midDens[1,], ci.high = ci.PPT_midDens[3,], ci.group = "Mid Dens")
+ci.PPT_lowDens.df <- data.frame(ppt = ppt_seq, median = ci.PPT_lowDens[2,], ci.low = ci.PPT_lowDens[1,], ci.high = ci.PPT_lowDens[3,], ci.group = "Low Dens")
+PPT_Dens <- rbind(ci.PPT_highDens.df, ci.PPT_midDens.df, ci.PPT_lowDens.df)
+ggplot(data = PPT_Dens, aes(x = ppt, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmin and density
+predictionTmin_highDens <- predictionTmin_midDens <- predictionTmin_lowDens <- matrix(NA, length(samp), length(tmin_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmin_highDens[s,] <- predict_fun(tmin=tmin_seq,dens=dens_quant[2])
+  
+  predictionTmin_midDens[s,] <- predict_fun(tmin=tmin_seq,dens=dens_mean)
+  
+  predictionTmin_lowDens[s,] <- predict_fun(tmin=tmin_seq,dens=dens_quant[1])
+}
+predictionTmin_highDens_exp <- exp(predictionTmin_highDens)
+predictionTmin_midDens_exp <- exp(predictionTmin_midDens)
+predictionTmin_lowDens_exp <- exp(predictionTmin_lowDens)
+ci.Tmin_highDens <- apply(predictionTmin_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmin_midDens <- apply(predictionTmin_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_lowDens <- apply(predictionTmin_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmin_highDens.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_highDens[2,], ci.low = ci.Tmin_highDens[1,], ci.high = ci.Tmin_highDens[3,], ci.group = "High Dens")
+ci.Tmin_midDens.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_midDens[2,], ci.low = ci.Tmin_midDens[1,], ci.high = ci.Tmin_midDens[3,], ci.group = "Mid Dens")
+ci.Tmin_lowDens.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_lowDens[2,], ci.low = ci.Tmin_lowDens[1,], ci.high = ci.Tmin_lowDens[3,], ci.group = "Low Dens")
+Tmin_Dens <- rbind(ci.Tmin_highDens.df, ci.Tmin_midDens.df, ci.Tmin_lowDens.df)
+ggplot(data = Tmin_Dens, aes(x = tmin, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmax and density
+predictionTmax_highDens <- predictionTmax_midDens <- predictionTmax_lowDens <- matrix(NA, length(samp), length(tmax_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmax_highDens[s,] <- predict_fun(tmax=tmax_seq,dens=dens_quant[2])
+  
+  predictionTmax_midDens[s,] <- predict_fun(tmax=tmax_seq,dens=dens_mean)
+  
+  predictionTmax_lowDens[s,] <- predict_fun(tmax=tmax_seq,dens=dens_quant[1])
+}
+predictionTmax_highDens_exp <- exp(predictionTmax_highDens)
+predictionTmax_midDens_exp <- exp(predictionTmax_midDens)
+predictionTmax_lowDens_exp <- exp(predictionTmax_lowDens)
+ci.Tmax_highDens <- apply(predictionTmax_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmax_midDens <- apply(predictionTmax_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmax_lowDens <- apply(predictionTmax_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmax_highDens.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_highDens[2,], ci.low = ci.Tmax_highDens[1,], ci.high = ci.Tmax_highDens[3,], ci.group = "High Dens")
+ci.Tmax_midDens.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_midDens[2,], ci.low = ci.Tmax_midDens[1,], ci.high = ci.Tmax_midDens[3,], ci.group = "Mid Dens")
+ci.Tmax_lowDens.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_lowDens[2,], ci.low = ci.Tmax_lowDens[1,], ci.high = ci.Tmax_lowDens[3,], ci.group = "Low Dens")
+Tmax_Dens <- rbind(ci.Tmax_highDens.df, ci.Tmax_midDens.df, ci.Tmax_lowDens.df)
+ggplot(data = Tmax_Dens, aes(x = tmax, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmax, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+
+#PPT dev and density
+predictionPPTdev_highDens <- predictionPPTdev_midDens <- predictionPPTdev_lowDens <- matrix(NA, length(samp), length(ppt_dev_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionPPTdev_highDens[s,] <- predict_fun(ppt_dev=ppt_dev_seq,dens=dens_quant[2])
+  
+  predictionPPTdev_midDens[s,] <- predict_fun(ppt_dev=ppt_dev_seq,dens=dens_mean)
+  
+  predictionPPTdev_lowDens[s,] <- predict_fun(ppt_dev=ppt_dev_seq,dens=dens_quant[1])
+}
+predictionPPTdev_highDens_exp <- exp(predictionPPTdev_highDens)
+predictionPPTdev_midDens_exp <- exp(predictionPPTdev_midDens)
+predictionPPTdev_lowDens_exp <- exp(predictionPPTdev_lowDens)
+ci.PPTdev_highDens <- apply(predictionPPTdev_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.PPTdev_midDens <- apply(predictionPPTdev_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPTdev_lowDens <- apply(predictionPPTdev_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.PPTdev_highDens.df <- data.frame(ppt_dev = ppt_dev_seq, median = ci.PPTdev_highDens[2,], ci.low = ci.PPTdev_highDens[1,], ci.high = ci.PPTdev_highDens[3,], ci.group = "High Dens")
+ci.PPTdev_midDens.df <- data.frame(ppt_dev = ppt_dev_seq, median = ci.PPTdev_midDens[2,], ci.low = ci.PPTdev_midDens[1,], ci.high = ci.PPTdev_midDens[3,], ci.group = "Mid Dens")
+ci.PPTdev_lowDens.df <- data.frame(ppt_dev = ppt_dev_seq, median = ci.PPTdev_lowDens[2,], ci.low = ci.PPTdev_lowDens[1,], ci.high = ci.PPTdev_lowDens[3,], ci.group = "Low Dens")
+PPTdev_Dens <- rbind(ci.PPTdev_highDens.df, ci.PPTdev_midDens.df, ci.PPTdev_lowDens.df)
+ggplot(data = PPTdev_Dens, aes(x = ppt_dev, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = ppt_dev, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmin dev and density
+predictionTmindev_highDens <- predictionTmindev_midDens <- predictionTmindev_lowDens <- matrix(NA, length(samp), length(tmin_dev_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmindev_highDens[s,] <- predict_fun(tmin_dev=tmin_dev_seq,dens=dens_quant[2])
+  
+  predictionTmindev_midDens[s,] <- predict_fun(tmin_dev=tmin_dev_seq,dens=dens_mean)
+  
+  predictionTmindev_lowDens[s,] <- predict_fun(tmin_dev=tmin_dev_seq,dens=dens_quant[1])
+}
+predictionTmindev_highDens_exp <- exp(predictionTmindev_highDens)
+predictionTmindev_midDens_exp <- exp(predictionTmindev_midDens)
+predictionTmindev_lowDens_exp <- exp(predictionTmindev_lowDens)
+ci.Tmindev_highDens <- apply(predictionTmindev_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmindev_midDens <- apply(predictionTmindev_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmindev_lowDens <- apply(predictionTmindev_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmindev_highDens.df <- data.frame(tmin_dev_seq = tmin_dev, median = ci.Tmindev_highDens[2,], ci.low = ci.Tmindev_highDens[1,], ci.high = ci.Tmindev_highDens[3,], ci.group = "High Dens")
+ci.Tmindev_midDens.df <- data.frame(tmin_dev_seq = tmin_dev, median = ci.Tmindev_midDens[2,], ci.low = ci.Tmindev_midDens[1,], ci.high = ci.Tmindev_midDens[3,], ci.group = "Mid Dens")
+ci.Tmindev_lowDens.df <- data.frame(tmin_dev_seq = tmin_dev, median = ci.Tmindev_lowDens[2,], ci.low = ci.Tmindev_lowDens[1,], ci.high = ci.Tmindev_lowDens[3,], ci.group = "Low Dens")
+Tmindev_Dens <- rbind(ci.Tmindev_highDens.df, ci.Tmindev_midDens.df, ci.Tmindev_lowDens.df)
+ggplot(data = Tmindev_Dens, aes(x = tmin_dev, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmin_dev, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+  geom_line() + 
+  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+  ylab("Predicted percent cover") 
+
+#Tmax dev and density
+predictionTmaxdev_highDens <- predictionTmaxdev_midDens <- predictionTmaxdev_lowDens <- matrix(NA, length(samp), length(tmax_dev_seq)) 
+
+for(s in 1:length(samp)){
+  i <- samp[s]
+  predictionTmaxdev_highDens[s,] <- predict_fun(tmax_dev=tmax_dev_seq,dens=dens_quant[2])
+  
+  predictionTmaxdev_midDens[s,] <- predict_fun(tmax_dev=tmax_dev_seq,dens=dens_mean)
+  
+  predictionTmaxdev_lowDens[s,] <- predict_fun(tmax_dev=tmax_dev_seq,dens=dens_quant[1])
+}
+predictionTmaxdev_highDens_exp <- exp(predictionTmaxdev_highDens)
+predictionTmaxdev_midDens_exp <- exp(predictionTmaxdev_midDens)
+predictionTmaxdev_lowDens_exp <- exp(predictionTmaxdev_lowDens)
+ci.Tmaxdev_highDens <- apply(predictionTmaxdev_highDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+ci.Tmaxdev_midDens <- apply(predictionTmaxdev_midDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmaxdev_lowDens <- apply(predictionTmaxdev_lowDens_exp, 2, quantile, c(0.025, 0.5, 0.975))
+ci.Tmaxdev_highDens.df <- data.frame(tmax_dev = tmax_dev_seq, median = ci.Tmaxdev_highDens[2,], ci.low = ci.Tmaxdev_highDens[1,], ci.high = ci.Tmaxdev_highDens[3,], ci.group = "High Dens")
+ci.Tmaxdev_midDens.df <- data.frame(tmax_dev = tmax_dev_seq, median = ci.Tmaxdev_midDens[2,], ci.low = ci.Tmaxdev_midDens[1,], ci.high = ci.Tmaxdev_midDens[3,], ci.group = "Mid Dens")
+ci.Tmaxdev_lowDens.df <- data.frame(tmax_dev = tmax_dev_seq, median = ci.Tmaxdev_lowDens[2,], ci.low = ci.Tmaxdev_lowDens[1,], ci.high = ci.Tmaxdev_lowDens[3,], ci.group = "Low Dens")
+Tmaxdev_Dens <- rbind(ci.Tmaxdev_highDens.df, ci.Tmaxdev_midDens.df, ci.Tmaxdev_lowDens.df)
+ggplot(data = Tmaxdev_Dens, aes(x = tmax_dev, y = median, color = ci.group)) +
+  geom_ribbon(aes(x = tmax_dev, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
   scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
   geom_line() + 
   scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +

@@ -1,11 +1,11 @@
 library(ggplot2)
 
-predict_fun <- function(coef=betaOut,heatload=heatload_mean,ppt=ppt_mean,tmin=tmin_mean,tmax=tmax_mean,ppt_dev=ppt_dev_mean,tmin_dev=tmin_dev_mean,tmax_dev=tmax_dev_mean,dens=dens_mean){
-  coef[i,1] + coef[i,2]*heatload + coef[i,3]*ppt + coef[i,4]*tmin +
-    coef[i,5]*tmax + coef[i,6]*ppt_dev + coef[i,7]*tmin_dev + coef[i,8]*tmax_dev + coef[i,9]*heatload*ppt +
-    coef[i,10]*heatload*tmin + coef[i,11]*heatload*tmax + coef[i,12]*heatload*ppt_dev + coef[i,13]*heatload*tmin_dev +
-    coef[i,14]*heatload*tmax_dev + coef[i,15]*ppt*tmin + coef[i,16]*ppt*tmax + coef[i,17]*tmin*tmax + 
-    coef[i,18]*ppt*ppt_dev + coef[i,19]*tmin*tmin_dev + coef[i,20]*tmax*tmax_dev + dens
+predict_fun <- function(coef=betaOut_dd,heatload=heatload_mean,ppt=ppt_mean,tmin=tmin_mean,tmax=tmax_mean,ppt_dev=ppt_dev_mean,tmin_dev=tmin_dev_mean,tmax_dev=tmax_dev_mean,dens=dens_mean){
+	coef[i,1] + coef[i,2]*heatload + coef[i,3]*ppt + coef[i,4]*tmin +
+		coef[i,5]*tmax + coef[i,6]*ppt_dev + coef[i,7]*tmin_dev + coef[i,8]*tmax_dev + coef[i,9]*heatload*ppt +
+		coef[i,10]*heatload*tmin + coef[i,11]*heatload*tmax + coef[i,12]*heatload*ppt_dev + coef[i,13]*heatload*tmin_dev +
+		coef[i,14]*heatload*tmax_dev + coef[i,15]*ppt*tmin + coef[i,16]*ppt*tmax + coef[i,17]*tmin*tmax + 
+		coef[i,18]*ppt*ppt_dev + coef[i,19]*tmin*tmin_dev + coef[i,20]*tmax*tmax_dev + coef[i,21]*dens 
 }
 #INTERACTION PLOTS
 samp <- sample(seq((burnin+1),iter),1000)
@@ -57,10 +57,10 @@ tmax_dev_quant <- quantile(Xall[,,8], c(0.2, 0.8))
 predictionHeatload_highPPT <- predictionHeatload_midPPT <- predictionHeatload_lowPPT <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_quant[2])
-  predictionHeatload_midPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_mean)
-  predictionHeatload_lowPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_quant[1])
+	i <- samp[s]
+	predictionHeatload_highPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_quant[2])
+	predictionHeatload_midPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_mean)
+	predictionHeatload_lowPPT[s,] <- predict_fun(heatload=heatload_seq,ppt=ppt_quant[1])
 }
 
 predictionHeatload_highPPT_exp <- exp(predictionHeatload_highPPT)
@@ -74,22 +74,22 @@ ci.Heatload_midPPT.df <- data.frame(heatload = heatload_seq, median = ci.Heatloa
 ci.Heatload_lowPPT.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowPPT[2,], ci.low = ci.Heatload_lowPPT[1,], ci.high = ci.Heatload_lowPPT[3,], ci.group = "Low PPT")
 Heatload_PPT <- rbind(ci.Heatload_highPPT.df, ci.Heatload_midPPT.df, ci.Heatload_lowPPT.df)
 ggplot(data = Heatload_PPT, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Heatload and Tmin
 predictionHeatload_highTmin <- predictionHeatload_midTmin <- predictionHeatload_lowTmin <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_quant[2])
-  
-  predictionHeatload_midTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_mean)
-  
-  predictionHeatload_lowTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_quant[1])
+	i <- samp[s]
+	predictionHeatload_highTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_quant[2])
+	
+	predictionHeatload_midTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_mean)
+	
+	predictionHeatload_lowTmin[s,] <- predict_fun(heatload=heatload_seq,tmin=tmin_quant[1])
 }
 
 predictionHeatload_highTmin_exp <- exp(predictionHeatload_highTmin)
@@ -103,22 +103,22 @@ ci.Heatload_midTmin.df <- data.frame(heatload = heatload_seq, median = ci.Heatlo
 ci.Heatload_lowTmin.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowTmin[2,], ci.low = ci.Heatload_lowTmin[1,], ci.high = ci.Heatload_lowTmin[3,], ci.group = "Low Tmin")
 Heatload_Tmin <- rbind(ci.Heatload_highTmin.df, ci.Heatload_midTmin.df, ci.Heatload_lowTmin.df)
 ggplot(data = Heatload_Tmin, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Heatload and Tmax
 predictionHeatload_highTmax <- predictionHeatload_midTmax <- predictionHeatload_lowTmax <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_quant[2])
-  
-  predictionHeatload_midTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_mean)
-  
-  predictionHeatload_lowTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_quant[1])
+	i <- samp[s]
+	predictionHeatload_highTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_quant[2])
+	
+	predictionHeatload_midTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_mean)
+	
+	predictionHeatload_lowTmax[s,] <- predict_fun(heatload=heatload_seq,tmax=tmax_quant[1])
 }
 
 predictionHeatload_highTmax_exp <- exp(predictionHeatload_highTmax)
@@ -132,22 +132,22 @@ ci.Heatload_midTmax.df <- data.frame(heatload = heatload_seq, median = ci.Heatlo
 ci.Heatload_lowTmax.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowTmax[2,], ci.low = ci.Heatload_lowTmax[1,], ci.high = ci.Heatload_lowTmax[3,], ci.group = "Low Tmax")
 Heatload_Tmax <- rbind(ci.Heatload_highTmax.df, ci.Heatload_midTmax.df, ci.Heatload_lowTmax.df)
 ggplot(data = Heatload_Tmax, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Heatload and PPT dev
 predictionHeatload_highPPTdev <- predictionHeatload_midPPTdev <- predictionHeatload_lowPPTdev <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_quant[2])
-  
-  predictionHeatload_midPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_mean)
-  
-  predictionHeatload_lowPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_quant[1])
+	i <- samp[s]
+	predictionHeatload_highPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_quant[2])
+	
+	predictionHeatload_midPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_mean)
+	
+	predictionHeatload_lowPPTdev[s,] <- predict_fun(heatload=heatload_seq,ppt_dev=ppt_dev_quant[1])
 }
 predictionHeatload_highPPTdev_exp <- exp(predictionHeatload_highPPTdev)
 predictionHeatload_midPPTdev_exp <- exp(predictionHeatload_midPPTdev)
@@ -160,22 +160,22 @@ ci.Heatload_midPPTdev.df <- data.frame(heatload = heatload_seq, median = ci.Heat
 ci.Heatload_lowPPTdev.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowPPTdev[2,], ci.low = ci.Heatload_lowPPTdev[1,], ci.high = ci.Heatload_lowPPTdev[3,], ci.group = "Low PPTdev")
 Heatload_PPTdev <- rbind(ci.Heatload_highPPTdev.df, ci.Heatload_midPPTdev.df, ci.Heatload_lowPPTdev.df)
 ggplot(data = Heatload_PPTdev, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Heatload and Tmin dev
 predictionHeatload_highTmindev <- predictionHeatload_midTmindev <- predictionHeatload_lowTmindev <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_quant[2])
-  
-  predictionHeatload_midTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_mean)
-  
-  predictionHeatload_lowTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_quant[1])
+	i <- samp[s]
+	predictionHeatload_highTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_quant[2])
+	
+	predictionHeatload_midTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_mean)
+	
+	predictionHeatload_lowTmindev[s,] <- predict_fun(heatload=heatload_seq,tmin_dev=tmin_dev_quant[1])
 }
 
 predictionHeatload_highTmindev_exp <- exp(predictionHeatload_highTmindev)
@@ -189,22 +189,22 @@ ci.Heatload_midTmindev.df <- data.frame(heatload = heatload_seq, median = ci.Hea
 ci.Heatload_lowTmindev.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowTmindev[2,], ci.low = ci.Heatload_lowTmindev[1,], ci.high = ci.Heatload_lowTmindev[3,], ci.group = "Low Tmindev")
 Heatload_Tmindev <- rbind(ci.Heatload_highTmindev.df, ci.Heatload_midTmindev.df, ci.Heatload_lowTmindev.df)
 ggplot(data = Heatload_Tmindev, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Heatload and Tmax dev
 predictionHeatload_highTmaxdev <- predictionHeatload_midTmaxdev <- predictionHeatload_lowTmaxdev <- matrix(NA, length(samp), length(heatload_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionHeatload_highTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_quant[2])
-  
-  predictionHeatload_midTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_mean)
-  
-  predictionHeatload_lowTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_quant[1])
+	i <- samp[s]
+	predictionHeatload_highTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_quant[2])
+	
+	predictionHeatload_midTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_mean)
+	
+	predictionHeatload_lowTmaxdev[s,] <- predict_fun(heatload=heatload_seq,tmax_dev=tmax_dev_quant[1])
 }
 
 predictionHeatload_highTmaxdev_exp <- exp(predictionHeatload_highTmaxdev)
@@ -218,22 +218,22 @@ ci.Heatload_midTmaxdev.df <- data.frame(heatload = heatload_seq, median = ci.Hea
 ci.Heatload_lowTmaxdev.df <- data.frame(heatload = heatload_seq, median = ci.Heatload_lowTmaxdev[2,], ci.low = ci.Heatload_lowTmaxdev[1,], ci.high = ci.Heatload_lowTmaxdev[3,], ci.group = "Low Tmaxdev")
 Heatload_Tmaxdev <- rbind(ci.Heatload_highTmaxdev.df, ci.Heatload_midTmaxdev.df, ci.Heatload_lowTmaxdev.df)
 ggplot(data = Heatload_Tmaxdev, aes(x = heatload, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = heatload, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #PPT and Tmin
 predictionPPT_highTmin <- predictionPPT_midTmin <- predictionPPT_lowTmin <- matrix(NA, length(samp), length(ppt_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionPPT_highTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_quant[2])
-  
-  predictionPPT_midTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_mean)
-  
-  predictionPPT_lowTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_quant[1])
+	i <- samp[s]
+	predictionPPT_highTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_quant[2])
+	
+	predictionPPT_midTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_mean)
+	
+	predictionPPT_lowTmin[s,] <- predict_fun(ppt=ppt_seq,tmin=tmin_quant[1])
 }
 
 predictionPPT_highTmin_exp <- exp(predictionPPT_highTmin)
@@ -247,22 +247,22 @@ ci.PPT_midTmin.df <- data.frame(ppt = ppt_seq, median = ci.PPT_midTmin[2,], ci.l
 ci.PPT_lowTmin.df <- data.frame(ppt = ppt_seq, median = ci.PPT_lowTmin[2,], ci.low = ci.PPT_lowTmin[1,], ci.high = ci.PPT_lowTmin[3,], ci.group = "Low Tmin")
 PPT_Tmin <- rbind(ci.PPT_highTmin.df, ci.PPT_midTmin.df, ci.PPT_lowTmin.df)
 ggplot(data = PPT_Tmin, aes(x = ppt, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #PPT and Tmax
 predictionPPT_highTmax <- predictionPPT_midTmax <- predictionPPT_lowTmax <- matrix(NA, length(samp), length(ppt_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionPPT_highTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_quant[2])
-  
-  predictionPPT_midTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_mean)
-  
-  predictionPPT_lowTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_quant[1])
+	i <- samp[s]
+	predictionPPT_highTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_quant[2])
+	
+	predictionPPT_midTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_mean)
+	
+	predictionPPT_lowTmax[s,] <- predict_fun(ppt=ppt_seq,tmax=tmax_quant[1])
 }
 
 predictionPPT_highTmax_exp <- exp(predictionPPT_highTmax)
@@ -276,22 +276,22 @@ ci.PPT_midTmax.df <- data.frame(ppt = ppt_seq, median = ci.PPT_midTmax[2,], ci.l
 ci.PPT_lowTmax.df <- data.frame(ppt = ppt_seq, median = ci.PPT_lowTmax[2,], ci.low = ci.PPT_lowTmax[1,], ci.high = ci.PPT_lowTmax[3,], ci.group = "Low Tmax")
 PPT_Tmax <- rbind(ci.PPT_highTmax.df, ci.PPT_midTmax.df, ci.PPT_lowTmax.df)
 ggplot(data = PPT_Tmax, aes(x = ppt, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Tmin and Tmax
 predictionTmin_highTmax <- predictionTmin_midTmax <- predictionTmin_lowTmax <- matrix(NA, length(samp), length(tmin_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionTmin_highTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_quant[2])
-  
-  predictionTmin_midTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_mean)
-  
-  predictionTmin_lowTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_quant[1])
+	i <- samp[s]
+	predictionTmin_highTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_quant[2])
+	
+	predictionTmin_midTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_mean)
+	
+	predictionTmin_lowTmax[s,] <- predict_fun(tmin=tmin_seq,tmax=tmax_quant[1])
 }
 
 predictionTmin_highTmax_exp <- exp(predictionTmin_highTmax)
@@ -305,22 +305,22 @@ ci.Tmin_midTmax.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_midTmax[2,], 
 ci.Tmin_lowTmax.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_lowTmax[2,], ci.low = ci.Tmin_lowTmax[1,], ci.high = ci.Tmin_lowTmax[3,], ci.group = "Low Tmax")
 Tmin_Tmax <- rbind(ci.Tmin_highTmax.df, ci.Tmin_midTmax.df, ci.Tmin_lowTmax.df)
 ggplot(data = Tmin_Tmax, aes(x = tmin, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #PPT and PPT dev
 predictionPPT_highPPTdev <- predictionPPT_midPPTdev <- predictionPPT_lowPPTdev <- matrix(NA, length(samp), length(ppt_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionPPT_highPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_quant[2])
-  
-  predictionPPT_midPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_mean)
-  
-  predictionPPT_lowPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_quant[1])
+	i <- samp[s]
+	predictionPPT_highPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_quant[2])
+	
+	predictionPPT_midPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_mean)
+	
+	predictionPPT_lowPPTdev[s,] <- predict_fun(ppt=ppt_seq,ppt_dev=ppt_dev_quant[1])
 }
 
 predictionPPT_highPPTdev_exp <- exp(predictionPPT_highPPTdev)
@@ -334,22 +334,22 @@ ci.PPT_midPPTdev.df <- data.frame(ppt = ppt_seq, median = ci.PPT_midPPTdev[2,], 
 ci.PPT_lowPPTdev.df <- data.frame(ppt = ppt_seq, median = ci.PPT_lowPPTdev[2,], ci.low = ci.PPT_lowPPTdev[1,], ci.high = ci.PPT_lowPPTdev[3,], ci.group = "Low PPTdev")
 PPT_PPTdev <- rbind(ci.PPT_highPPTdev.df, ci.PPT_midPPTdev.df, ci.PPT_lowPPTdev.df)
 ggplot(data = PPT_PPTdev, aes(x = ppt, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = ppt, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Tmin and Tmin dev
 predictionTmin_highTmindev <- predictionTmin_midTmindev <- predictionTmin_lowTmindev <- matrix(NA, length(samp), length(tmin_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionTmin_highTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_quant[2])
-  
-  predictionTmin_midTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_mean)
-  
-  predictionTmin_lowTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_quant[1])
+	i <- samp[s]
+	predictionTmin_highTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_quant[2])
+	
+	predictionTmin_midTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_mean)
+	
+	predictionTmin_lowTmindev[s,] <- predict_fun(tmin=tmin_seq,tmin_dev=tmin_dev_quant[1])
 }
 
 predictionTmin_highTmindev_exp <- exp(predictionTmin_highTmindev)
@@ -363,22 +363,22 @@ ci.Tmin_midTmindev.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_midTmindev
 ci.Tmin_lowTmindev.df <- data.frame(tmin = tmin_seq, median = ci.Tmin_lowTmindev[2,], ci.low = ci.Tmin_lowTmindev[1,], ci.high = ci.Tmin_lowTmindev[3,], ci.group = "Low Tmindev")
 Tmin_Tmindev <- rbind(ci.Tmin_highTmindev.df, ci.Tmin_midTmindev.df, ci.Tmin_lowTmindev.df)
 ggplot(data = Tmin_Tmindev, aes(x = tmin, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = tmin, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 #Tmax and Tmax dev
 predictionTmax_highTmaxdev <- predictionTmax_midTmaxdev <- predictionTmax_lowTmaxdev <- matrix(NA, length(samp), length(tmax_seq)) 
 
 for(s in 1:length(samp)){
-  i <- samp[s]
-  predictionTmax_highTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_quant[2])
-  
-  predictionTmax_midTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_mean)
-  
-  predictionTmax_lowTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_quant[1])
+	i <- samp[s]
+	predictionTmax_highTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_quant[2])
+	
+	predictionTmax_midTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_mean)
+	
+	predictionTmax_lowTmaxdev[s,] <- predict_fun(tmax=tmax_seq,tmax_dev=tmax_dev_quant[1])
 }
 
 predictionTmax_highTmaxdev_exp <- exp(predictionTmax_highTmaxdev)
@@ -392,84 +392,24 @@ ci.Tmax_midTmaxdev.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_midTmaxdev
 ci.Tmax_lowTmaxdev.df <- data.frame(tmax = tmax_seq, median = ci.Tmax_lowTmaxdev[2,], ci.low = ci.Tmax_lowTmaxdev[1,], ci.high = ci.Tmax_lowTmaxdev[3,], ci.group = "Low Tmaxdev")
 Tmax_Tmaxdev <- rbind(ci.Tmax_highTmaxdev.df, ci.Tmax_midTmaxdev.df, ci.Tmax_lowTmaxdev.df)
 ggplot(data = Tmax_Tmaxdev, aes(x = tmax, y = median, color = ci.group)) +
-  geom_ribbon(aes(x = tmax, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
-  scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
-  geom_line() + 
-  scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
-  ylab("Predicted percent cover") 
+	geom_ribbon(aes(x = tmax, ymin = ci.low, ymax = ci.high, fill = ci.group), color = NA, alpha = 0.5) +
+	scale_fill_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) + 
+	geom_line() + 
+	scale_color_manual(values=c("#4575B4", "#FDDBC7", "#B2182B")) +
+	ylab("Predicted percent cover") 
 
 
+#Heatload and density
+predictionDens<- matrix(NA, length(samp), length(dens_seq)) 
 
-#INDIVIDUAL RESPONSE PLOTS
-grow.monsoon$LONbin <- ifelse(grow.monsoon$LON > -109, "-109 to -104", "-114 to -109")
-grow.monsoon$LATbin <- ifelse(grow.monsoon$LAT > 37, "37 to 41", "32 to 37")
-grow.monsoon$LATLONbin <- paste(grow.monsoon$LONbin, grow.monsoon$LATbin)
-ind.samples <- unique(grow.monsoon[,c("LATLONbin", "treeCD")]) %>% group_by(LATLONbin)
-
-get.ind.tmp.response<- function(j){
-  tree.subset <- ind.samples[j,]
-  tree.grow <- grow.monsoon %>% filter(LATLONbin == tree.subset$LATLONbin & treeCD == tree.subset$treeCD)
-  
-  Tmean_AprMayJunrng <- range(tree.grow$Tmean_AprMayJun,na.rm = TRUE) #setting range for tmp_normrng
-  Tmean_AprMayJun <- seq(Tmean_AprMayJunrng[1], Tmean_AprMayJunrng[2], by = 0.1)
-  x <- mean(tree.grow$DIA_prev)
-  ppt_norm <- mean(tree.grow$ppt_norm)
-  tmp_norm <- mean(tree.grow$tmp_norm)
-  Tmean_SepOct <- mean(tree.grow$Tmean_SepOct)
-  Precip_JulAug <- mean(tree.grow$Precip_JulAug)
-  Precip_NovDecJanFebMar <- mean(tree.grow$Precip_NovDecJanFebMar)
-  tmp_norm_range <- quantile(tree.grow$tmp_norm, c(0.2, 0.8))
-  growthpredictionTmeanAprMayJun_tnorm <- matrix(NA, length(plotdatainterval$u_beta_Tmean_AprMayJun), length(Tmean_AprMayJun)) 
-  
-  for(i in 1:length(plotdatainterval$u_beta_Tmean_AprMayJun)){
-    growthpredictionTmeanAprMayJun_tnorm[i,] <- plotdatainterval[i,"u_beta_ppt_norm"]*ppt_norm + plotdatainterval[i,"u_beta_tmp_norm"]*tmp_norm +
-      plotdatainterval[i,"u_beta_Precip_JulAug"]*Precip_JulAug + plotdatainterval[i,"u_beta_Precip_NovDecJanFebMar"]*Precip_NovDecJanFebMar +
-      plotdatainterval[i,"u_beta_Tmean_AprMayJun"]*Tmean_AprMayJun + plotdatainterval[i,"u_beta_Tmean_SepOct"]*Tmean_SepOct +
-      plotdatainterval[i,"u_beta_DIA_prev"]*x + plotdatainterval[i,"u_beta_ppt_norm_tmp_norm"]*ppt_norm*tmp_norm +
-      plotdatainterval[i,"u_beta_ppt_norm_Precip_JulAug"]*ppt_norm*Precip_JulAug + plotdatainterval[i,"u_beta_ppt_norm_DIA_prev"]*ppt_norm*x +
-      plotdatainterval[i,"u_beta_ppt_norm_Precip_NovDecJanFebMar"]*ppt_norm*Precip_NovDecJanFebMar + 
-      plotdatainterval[i,"u_beta_ppt_norm_Tmean_AprMayJun"]*ppt_norm*Tmean_AprMayJun +  plotdatainterval[i,"u_beta_ppt_norm_Tmean_SepOct"]*ppt_norm*Tmean_SepOct +
-      plotdatainterval[i,"u_beta_tmp_norm_DIA_prev"]*tmp_norm*x + plotdatainterval[i,"u_beta_tmp_norm_Precip_JulAug"]*tmp_norm*Precip_JulAug +
-      plotdatainterval[i,"u_beta_tmp_norm_Precip_NovDecJanFebMar"]*tmp_norm*Precip_NovDecJanFebMar + 
-      plotdatainterval[i,"u_beta_tmp_norm_Tmean_AprMayJun"]*tmp_norm*Tmean_AprMayJun + plotdatainterval[i,"u_beta_tmp_norm_Tmean_SepOct"]*tmp_norm*Tmean_SepOct + 
-      plotdatainterval[i,"u_beta_DIA_prev_Precip_JulAug"]*x*Precip_JulAug + plotdatainterval[i,"u_beta_DIA_prev_Precip_NovDecJanFebMar"]*x*Precip_NovDecJanFebMar + 
-      plotdatainterval[i,"u_beta_DIA_prev_Tmean_AprMayJun"]*x*Tmean_AprMayJun + plotdatainterval[i,"u_beta_DIA_prev_Tmean_SepOct"]*x*Tmean_SepOct + 
-      plotdatainterval[i,"u_beta_Precip_JulAug_Precip_NovDecJanFebMar"]*Precip_JulAug*Precip_NovDecJanFebMar +
-      plotdatainterval[i,"u_beta_Precip_JulAug_Tmean_AprMayJun"]*Precip_JulAug*Tmean_AprMayJun + 
-      plotdatainterval[i,"u_beta_Precip_JulAug_Tmean_SepOct"]*Precip_JulAug*Tmean_SepOct + 
-      plotdatainterval[i,"u_beta_Precip_NovDecJanFebMar_Tmean_AprMayJun"]*Precip_NovDecJanFebMar*Tmean_AprMayJun +  
-      plotdatainterval[i,"u_beta_Precip_NovDecJanFebMar_Tmean_SepOct"]*Precip_NovDecJanFebMar*Tmean_SepOct + 
-      plotdatainterval[i,"u_beta_Tmean_AprMayJun_Tmean_SepOct"]*Tmean_AprMayJun*Tmean_SepOct
-  }
-  Tmean_AprMayJun_prediction_trtnorm <- exp(growthpredictionTmeanAprMayJun_tnorm)
-  ci.Tmean_AprMayJuntnorm <- apply(Tmean_AprMayJun_prediction_trtnorm, 2, quantile, c(0.025, 0.5, 0.975))
-  ci.Tmean_AprMayJuntnorm.df <- data.frame(Tmean_AprMayJun = Tmean_AprMayJun, tmp_norm = tmp_norm, median = ci.Tmean_AprMayJuntnorm[2,], ci.low = ci.Tmean_AprMayJuntnorm[1,], ci.high = ci.Tmean_AprMayJuntnorm[3,], ci.group = tree.subset$treeCD)
-  Tmean_AprMayJun_tnormint <- rbind(ci.Tmean_AprMayJuntnorm.df)
-  print(ind.samples[j,])
-  Tmean_AprMayJun_tnormint  
+for(s in 1:length(samp)){
+	i <- samp[s]
+	predictionDens[s,] <- predict_fun(dens=dens_seq)
 }
-#get.ind.tmp.response(i = 6)
-Tmean_AprMayJun_tree_response <- list()
-Tmean_AprMayJun_tree_response <- lapply(1:length(ind.samples$treeCD), FUN = get.ind.tmp.response)
-Tmean_AprMayJun_tree_response.df <- do.call(rbind, Tmean_AprMayJun_tree_response)
-merged.response.samples <- merge(Tmean_AprMayJun_tree_response.df, ind.samples, by.x = "ci.group", by.y = "treeCD")
-merged.response.samples$ci.group <- as.character(merged.response.samples$ci.group)
-#color by group
-ggplot(data = merged.response.samples, aes(x = Tmean_AprMayJun, y = median, color = ci.group)) + geom_ribbon(aes(x = Tmean_AprMayJun, ymin = ci.low, ymax = ci.high, fill = ci.group),color = NA, alpha = 0.5) + 
-  geom_line() + mytheme + ylab("Predicted Growth") + ylim(0, 2)
-#color by LATLONbin
-ggplot(data = merged.response.samples, aes(x = Tmean_AprMayJun, y = median, color = LATLONbin, group = ci.group)) + geom_ribbon(aes(x = Tmean_AprMayJun, ymin = ci.low, ymax = ci.high, fill = LATLONbin, group = ci.group),color = NA, alpha = 0.5) + 
-  geom_line() + mytheme + ylab("Predicted Growth") + ylim(0, 2)
-#color by tmp_norm
-ggplot(data = merged.response.samples, aes(x = Tmean_AprMayJun, y = median, color = tmp_norm, group = ci.group)) + geom_line(alpha = 0.5) + 
-  mytheme + ylab("Predicted Growth") + ylim(0, 2) + scale_color_gradient2(low = "#4575b4", mid = "#fddbc7", high = "#b2182b")
-#map of LATLONbin
-all_states <- map_data("state")
-states <- subset(all_states, region %in% c("arizona", "colorado", "utah"))
-coordinates(states)<-~long+lat
-class(states)
-proj4string(states) <-CRS("+proj=longlat +datum=NAD83")
-mapdata<-states
-mapdata<-data.frame(mapdata)
-ggplot() + geom_polygon(data=mapdata, aes(x=long, y=lat, group = group), color ="darkgray", fill = "darkgray")+
-  geom_point(data = grow.monsoon, aes(x = LON, y = LAT, color = LATLONbin)) + theme_bw()
+predictionDens_exp <- exp(predictionDens)
+ci.Dens <- apply(predictionDens_exp, 2, quantile, c(0.025,0.5,0.975)) #confidence intervals
+Dens.df <- data.frame(dens = exp(dens_seq), median = ci.Dens[2,], ci.low = ci.Dens[1,], ci.high = ci.Dens[3,])
+ggplot(data = Dens.df, aes(x = dens, y = median)) +
+	geom_ribbon(aes(x = dens, ymin = ci.low, ymax = ci.high), fill = "#4575B4", alpha = 0.5) +
+	geom_line(color = "#4575B4") + 
+	ylab("Predicted percent cover") 
