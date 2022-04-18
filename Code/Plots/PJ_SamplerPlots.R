@@ -1,8 +1,36 @@
 library(ggplot2)
+library(RColorBrewer)
 
-# beta: smaller observation error
-# beta2: original values
-# beta3: q and r = 2
+load("./Output/modelOut.rda")
+load("./Output/modelOut_dd.rda")
+load("./Output/modelOut_ddint.rda")
+
+## Coefficient plots, all
+meanBeta_dd_trim <- meanBeta_dd[-21]
+sdBeta_dd_trim <- sdBeta_dd[-21]
+meanBeta_ddint_trim <- meanBeta_ddint[-(21:28)]
+sdBeta_ddint_trim <- sdBeta_ddint[-(21:28)]
+
+name_vec <- c("Intercept","Heatload","Mean PPT","Min T","Max T","PPT dev","Tmin dev","Tmax dev",
+              "Heatload*PPT","Heatload*Tmin","Heatload*Tmax","Heatload*PPTdev","Heatload*Tmindev","Heatload*Tmaxdev",
+              "PPT*Tmin","PPT*Tmax","Tmin*Tmax","PPTmean*PPTdev","Tminmean*Tmindev","Tmaxmean*Tmaxdev")
+coef_dat <- data.frame(Parameter=rep(name_vec,3),Model=c(rep("Climate",20),rep("Density",20),rep("Density Int",20)),
+                       Value=c(meanBeta,meanBeta_dd_trim,meanBeta_ddint_trim),
+                       sd_plus=c((meanBeta+sdBeta),(meanBeta_dd_trim+sdBeta_dd_trim),(meanBeta_ddint_trim+sdBeta_ddint_trim)),
+                       sd_minus=c((meanBeta-sdBeta),(meanBeta_dd_trim-sdBeta_dd_trim),(meanBeta_ddint_trim-sdBeta_ddint_trim)))
+coef_dat$Parameter <- as.character(coef_dat$Parameter)
+coef_dat$Parameter <- factor(coef_dat$Parameter, levels=rev(unique(coef_dat$Parameter)))
+
+ggplot(coef_dat, aes(x = Parameter, y = Value, color = Model)) +
+  geom_hline(yintercept = 0, colour = gray(1/2), lty = 2) +
+  geom_point() + 
+  geom_linerange(aes(x = Parameter, 
+                     ymin = sd_minus,
+                     ymax = sd_plus),
+                 lwd = 1/2) + 
+  scale_color_manual(values = c("#1b9e77","#d95f02","#7570b3"))+
+  coord_flip()
+  
 
 ## Coefficients plot, no density coefficient
 meanBeta <- colMeans(betaOut_ddint[burnin:iter,],na.rm=T)
@@ -109,3 +137,16 @@ latent_chain <- function(latent,year,start,end,N){
 
 latent_chain(latOut,25,1000,end,5)
 
+
+sample <- sample.int(ncol(latMean_dd),size=50)
+sample_latMean <- exp(latMean_dd[,sample])
+sample_d_latMean <- sample_latMean[2:37,] / sample_latMean[1:36,]
+mean_pc <- colMeans(sample_latMean)
+order <- sort(mean_pc,index.return=T)$ix
+
+pal <- colorRampPalette(brewer.pal(n=8, name = "Blues"))
+
+matplot(seq(1984,2020),sample_latMean[,order],type="l",col=pal(70)[21:70],xlab = "Year", ylab= "Percent cover")
+
+matplot(sample_latMean[1:36,order],sample_d_latMean[,order],pch=20,col=pal(70)[21:70],xlab = "Percent cover", ylab= "Proportional change in percent cover")
+abline(1,0,lwd=2)
