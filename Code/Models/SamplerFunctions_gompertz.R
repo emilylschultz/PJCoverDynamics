@@ -112,7 +112,6 @@ sampleLatent<-function(Y1,Y2,y,X,Xall,Xdense=NA,s2,beta,o1,o2,eta,Ndatasets,tmax
 		v=v+mu2/s2
 	}
 	
-	
 	if(t<tmax & dd==T & ddint==F){
 		mu2<-(y[t+1,]-((X[t,,]%*%beta[-ddbeta]) + eta))/(beta[ddbeta]) ####Here y is arranged year by pixel and X is year by pixel by covariate 
 		Vi=Vi+1/s2
@@ -126,8 +125,6 @@ sampleLatent<-function(Y1,Y2,y,X,Xall,Xdense=NA,s2,beta,o1,o2,eta,Ndatasets,tmax
 		v=v+mu2/s2
 	}
 	
-	
-	
 	V<-1/Vi
 	yt<-rnorm(dim(v)[1],c(V*v),sqrt(V))
 	return(yt)
@@ -135,19 +132,24 @@ sampleLatent<-function(Y1,Y2,y,X,Xall,Xdense=NA,s2,beta,o1,o2,eta,Ndatasets,tmax
 }  
 
 dev_calc <- function(Y1,Y2,y,X,beta,o1,o2,s2,eta,dd=F,ddint=F){
+	##y=latent states
+	##X=Xall including all interactions with density  
+	
 	if(dd==T|ddint==T){y=c(y[-1,])} else {y=c(y[-1,])-c(y[-tmax,])}
 	Y1=c(Y1[-1,])
 	Y2=c(Y2[-1,])
 	X=apply(X,3,c)
 	eta<-do.call(rbind, replicate((tmax-1), eta, simplify=FALSE))
 	
-	lik_y <- dnorm(y,((X%*%beta)+eta),sqrt(s2))
-	lik_Y1 <- dnorm(Y1,y,sqrt(o1))*lik_y
-	lik_Y2 <- dnorm(Y2,y,sqrt(o2))*lik_y
+	lik_y <- dnorm(y,((X%*%beta)+eta),sqrt(s2)) # probability of true pc, given model
+	lik_Y1 <- dnorm(Y1,y,sqrt(o1)) # probability of observed pc (RAP), given true pc
+	lik_Y2 <- dnorm(Y2,y,sqrt(o2)) # probability of observed pc (Fill.), given true pc
 	
+	# log(product of probabilities) == sum of log(probabilities)
+	log_lik_y <- log(lik_y)
 	log_lik_Y1 <- log(lik_Y1)
 	log_lik_Y2 <- log(lik_Y2)
-	log_lik <- sum(log_lik_Y1) + sum(log_lik_Y2,na.rm=T)
+	log_lik <- sum(log_lik_y) + sum(log_lik_Y1) + sum(log_lik_Y2,na.rm=T)
 	
 	dev <- (-2)*log_lik
 	return(dev)
@@ -197,7 +199,8 @@ knots <- dim(K)[2]
 #beta<-solve for ML estimate 
 s2<- 0.2 #good guess
 t.Eta<-1/0.5
-y<- Y1 #RAP data + small noise? 
+noise <- matrix(rnorm(dim(Y1)[1]*dim(Y1)[2],0,0.1),dim(Y1)[1],dim(Y1)[2])
+y<- Y1 + noise  #RAP data + small noise? 
 
 o1<- -2*log(mean(pc_mat_RAP,na.rm=T)) + log(8.77^2 + mean(pc_mat_RAP,na.rm=T)^2) #observation variance for RAP data
 o2<- o1#-2*log(mean(pc_mat,na.rm=T)) + log(9.6^2 + mean(pc_mat,na.rm=T)^2) #observation variance for PJ data
