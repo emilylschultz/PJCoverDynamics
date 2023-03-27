@@ -21,9 +21,7 @@ PJcover <- stack(PCFiles)
 # Upload PJ presence/absence data
 mask <- raster(paste0(PC.path, "PJmask.tif"))
 
-# Set percent cover to NA where PJ are absent
-PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
-#values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
+PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0 where PJ is absent
 
 # Rename rasters in stacks
 
@@ -58,20 +56,28 @@ total_ppt <- numeric(0)
 ave_tmin <- numeric(0)
 ave_tmax <- numeric(0)
 for (i in 1:38){
-	sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
-	total_ppt <- cbind(total_ppt,sum_ppt) # add to ppt vector
-	sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
+	#sum_ppt <- rowSums(ppt_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate total ppt for each water year (Oct-Sep) for 2001 to 2016
+	#total_ppt <- cbind(total_ppt,sum_ppt) # add to ppt vector
+	#sum_tmin <- rowMeans(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
+	sum_tmin <- apply(tmin_mat[,(1+(i-1)*12):(12+(i-1)*12)],1,min) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
 	ave_tmin <- cbind(ave_tmin,sum_tmin) # add to tmin vector
-	sum_tmax <- rowMeans(tmax_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmax for each water year (Oct-Sep) for 2001 to 2016
+	
+	#sum_tmax <- rowMeans(tmax_mat[,(1+(i-1)*12):(12+(i-1)*12)]) # calculate average tmax for each water year (Oct-Sep) for 2001 to 2016
+	sum_tmax <- apply(tmax_mat[,(1+(i-1)*12):(12+(i-1)*12)],1,max) # calculate average tmin for each water year (Oct-Sep) for 2001 to 2016
 	ave_tmax <- cbind(ave_tmax,sum_tmax) # add to tmax vector
 }
 
+# Remove fire pixels
+fire <- which((values(PJcover[[20]])-values(PJcover[[19]])) < (-10))
+
 # Save matrix of pc values and vectors of location values
 pc_mat_RAP <- as.matrix(PJcover)
+pc_mat_RAP[fire,20]<-NA
 location.x.RAP = coordinates(PJcover)[,1]
 location.y.RAP = coordinates(PJcover)[,2]
 save(pc_mat_RAP,location.x.RAP,location.y.RAP,file="./Output/Climate_mat_RAP.rda")
 pc_mat_mask_RAP <- as.matrix(PJcover_mask)
+pc_mat_mask_RAP[fire,20]<-NA
 save(pc_mat_mask_RAP,location.x.RAP,location.y.RAP,file="./Output/PJcoverMask_mat_RAP.rda")
 noPJ <- which(values(mask)==0)
 save(noPJ,file="./Output/PJMask_mat.rda")

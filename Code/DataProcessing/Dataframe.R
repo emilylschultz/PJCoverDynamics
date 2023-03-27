@@ -17,9 +17,7 @@ PJcover <- stack("./PJCover/PJStack_clipped.tif")
 # Upload PJ presence/absence data
 mask <- raster("./PJCover/PJmask.tif")
 
-# Set percent cover to NA where PJ are absent (confirm this with Bob)
-PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0
-values(PJcover_mask)[values(PJcover_mask) == 0] = NA # convert 0 to NA
+PJcover_mask <- PJcover*mask # use mask (presence/absence) raster to set percent cover to 0 where PJ is absent
 
 # Rename rasters in stacks
 
@@ -61,12 +59,17 @@ for (i in 1:16){
 	ave_tmax <- c(ave_tmax,sum_tmax) # add to tmax vector
 }
 
+# Remove fire pixels
+fire <- which((values(PJcover[[4]])-values(PJcover[[3]])) < (-10))
+
 # Save matrix of pc values and vectors of location values
 pc_mat <- as.matrix(PJcover)[,1:17]
+pc_mat[fire,4]<-NA
 location.x = coordinates(PJcover)[,1]
 location.y = coordinates(PJcover)[,2]
 save(pc_mat,location.x,location.y,file="./Output/PJcover_mat.rda")
 pc_mat_mask <- as.matrix(PJcover_mask)[,1:17]
+pc_mat_mask[fire,4]<-NA
 save(pc_mat_mask,location.x,location.y,file="./Output/PJcoverMask_mat.rda")
 
 PJdata <- data.frame(Year_t = sort(rep(2000:2015,(nrow(PJcover)*ncol(PJcover)))), 

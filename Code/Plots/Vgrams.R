@@ -1,4 +1,7 @@
-## Variogram
+### Code to create variograms for PJ cover data
+### Created by: Emily Schultz
+### Created on: 4 Feb 2022
+
 library(sp)
 library(gstat)
 
