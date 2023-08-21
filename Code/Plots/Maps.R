@@ -20,7 +20,7 @@ colors = met.brewer(name="Hokusai3", n=123, type="continuous")
 tmap_options(output.dpi=600)
 
 # Load data
-load("SamplerDataMask_Lag.rda")
+load("SamplerDataMask_Lag_fire.rda")
 fire <- which(is.na(pc_mat_RAP[20,]))
 pc_mat_RAP <- pc_mat_RAP[,-fire]
 pc_mat <- pc_mat[,-fire]
