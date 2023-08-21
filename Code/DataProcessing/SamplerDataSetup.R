@@ -88,6 +88,10 @@ X_lag <- array(c(matrix(1,(tmax-1),n_pixel),heatload,PPT_mean,Tmax_mean,PPT_dev_
 						 PPT_mean*PPT_dev_lag,Tmax_mean*Tmax_dev_lag,
 						 PPT_mean^2,Tmax_mean^2),c((tmax-1),n_pixel,10)) # change from matrix to array (pixel x year x predictor) of non-density predictors
 
+# Save data with fire pixels included
+save(pc_mat,pc_mat_RAP,X,Xdense,file="SamplerDataMask_fire.rda")
+save(pc_mat,pc_mat_RAP,X_lag,Xdense_lag,fire,file="SamplerDataMask_Lag_fire.rda")
+
 # Remove pixels with fire
 fire <- which(is.na(pc_mat_RAP[20,]))
 pc_mat_RAP <- pc_mat_RAP[,-fire]
